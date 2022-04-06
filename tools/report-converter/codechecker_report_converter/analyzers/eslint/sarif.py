@@ -43,20 +43,26 @@ class Sarif(AnalyzerResultBase):
             return reports
 
         file_cache: Dict[str, File] = {}
-        diag = diagnostics["runs"][0]["results"]
-        for i in range(0, len(diag)):
+
+        if len(diagnostics["runs"] == 0):
+                        LOG.error("diagnostics['runs'] == 0")
+
+        diag = diagnostics["runs"][-1]["results"] # -1 = the last run
+
+        for bug in diag:    
             result_path = os.path.join(
-                os.path.dirname(file_path), diag[i]['locations'][0]['physicalLocation']['artifactLocation']['uri'])
+                os.path.dirname(file_path), bug['locations'][0]['physicalLocation']['artifactLocation']['uri'])
+            
             if not os.path.exists(result_path):
                 LOG.warning("Source file does not exists: %s", result_path)
                 continue
-            for bug in diag:
-                reports.append(Report(
-                    get_or_create_file(
-                        os.path.abspath(result_path), file_cache),
-                    int(bug["locations"][0]["physicalLocation"]["region"]["startLine"]),
-                    int(bug["locations"][0]["physicalLocation"]["region"]["startColumn"]),
-                    bug['message']['text'],
-                    bug['ruleId']))
+
+            reports.append(Report(
+                get_or_create_file(
+                    os.path.abspath(result_path), file_cache),
+                int(bug["locations"][0]["physicalLocation"]["region"]["startLine"]),
+                int(bug["locations"][0]["physicalLocation"]["region"]["startColumn"]),
+                bug['message']['text'],
+                bug['ruleId']))
 
         return reports
