@@ -11,6 +11,7 @@ import logging
 import os
 
 from typing import Dict, List
+from unittest import result
 
 from codechecker_report_converter.report import File, get_or_create_file, \
     Report
@@ -46,21 +47,20 @@ class AnalyzerResult(AnalyzerResultBase):
             return reports
 
         file_cache: Dict[str, File] = {}
-        for diag in diagnostics:
-            file_path = os.path.join(
-                os.path.dirname(file_path), diag.get('filePath'))
-
-            if not os.path.exists(file_path):
-                LOG.warning("Source file does not exists: %s", file_path)
+        diag = diagnostics["runs"][0]["results"]
+        for i in range(0, len(diag)):
+            result_path = os.path.join(
+                os.path.dirname(file_path), diag[i]['locations'][0]['physicalLocation']['artifactLocation']['uri'])
+            if not os.path.exists(result_path):
+                LOG.warning("Source file does not exists: %s", result_path)
                 continue
-
-            for bug in diag.get('messages', []):
+            for bug in diag:
                 reports.append(Report(
                     get_or_create_file(
-                        os.path.abspath(file_path), file_cache),
-                    int(bug['line']),
-                    int(bug['column']),
-                    bug['message'],
+                        os.path.abspath(result_path), file_cache),
+                    int(bug["locations"][0]["physicalLocation"]["region"]["startLine"]),
+                    int(bug["locations"][0]["physicalLocation"]["region"]["startColumn"]),
+                    bug['message']['text'],
                     bug['ruleId']))
 
         return reports
