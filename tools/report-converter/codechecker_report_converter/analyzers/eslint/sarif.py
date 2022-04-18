@@ -50,7 +50,7 @@ class Sarif(AnalyzerResultBase):
         diag = diagnostics["runs"][-1]["results"] # -1 = the last run
 
         for bug in diag:
-            for occurrences in bug['locations']:    
+            for occurrences in range(0, len(bug['locations'])):    
                 result_path = os.path.join(
                     os.path.dirname(file_path), bug['locations'][occurrences]['physicalLocation']['artifactLocation']['uri'])
 

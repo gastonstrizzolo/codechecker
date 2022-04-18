@@ -6,6 +6,7 @@
 #
 # -------------------------------------------------------------------------
 
+from email.parser import Parser
 import json
 import logging
 import os
@@ -14,10 +15,11 @@ from typing import Dict, List
 
 from codechecker_report_converter.report import File, get_or_create_file, \
     Report
+from codechecker_report_converter.report.parser import sarif
 
 from ..analyzer_result import AnalyzerResultBase
 
-from .sarif import *
+#from .sarif import Sarif
 
 LOG = logging.getLogger('report-converter')
 
@@ -33,7 +35,8 @@ class AnalyzerResult(AnalyzerResultBase):
         """ Get reports from the given analyzer result. """
         reports: List[Report] = []
         if file_path.endswith("sarif"):
-            reports = Sarif.get_reports_sarif(self, file_path)
+            parser = sarif.Parser(file_path)
+            reports = parser.get_reports(file_path)
         else:
             if not os.path.exists(file_path):
                 LOG.error("Report file does not exist: %s", file_path)
