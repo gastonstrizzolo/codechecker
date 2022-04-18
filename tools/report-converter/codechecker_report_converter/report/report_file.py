@@ -15,13 +15,14 @@ from codechecker_report_converter.report import File, Report
 from codechecker_report_converter.report.checker_labels import CheckerLabels
 from codechecker_report_converter.report.hash import HashType
 from codechecker_report_converter.report.parser import plist
+from codechecker_report_converter.report.parser import sarif
 from codechecker_report_converter.report.parser.base import AnalyzerInfo
 
 
 LOG = logging.getLogger('report-converter')
 
 
-SUPPORTED_ANALYZER_EXTENSIONS = [plist.EXTENSION]
+SUPPORTED_ANALYZER_EXTENSIONS = [plist.EXTENSION, sarif.EXTENSION]
 
 
 __SUPPORTED_ANALYZER_EXTENSIONS = tuple([
@@ -41,7 +42,9 @@ def get_parser(
     """ Returns a parser object for the given analyzer result file. """
     if analyzer_result_file_path.endswith(f".{plist.EXTENSION}"):
         return plist.Parser(checker_labels, file_cache)
-
+    if analyzer_result_file_path.endswith(f".{sarif.EXTENSION}"):
+        return sarif.Parser(checker_labels, file_cache)            
+## es none ese checker labels
 
 def get_reports(
     analyzer_result_file_path: str,
@@ -52,8 +55,10 @@ def get_reports(
     """ Get reports from the given report file. """
     parser = get_parser(analyzer_result_file_path, checker_labels, file_cache)
 
-    if parser:
+    if parser.EXTENSION == 'plist':
         return parser.get_reports(analyzer_result_file_path, source_dir_path)
+    if parser.EXTENSION == 'sarif':
+        return parser.get_reports(analyzer_result_file_path)
 
     return []
 

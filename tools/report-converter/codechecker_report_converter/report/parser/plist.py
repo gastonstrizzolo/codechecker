@@ -181,6 +181,8 @@ def get_file_index_map(
 
 
 class Parser(BaseParser):
+    EXTENSION = 'plist'
+
     def get_reports(
         self,
         analyzer_result_file_path: str,

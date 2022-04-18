@@ -1,0 +1,41 @@
+report :{
+        "analyzer_result_file_path": "/home/gaston/ecl_repos/javascript/stream-processor/semgrep.sarif", 
+        "file": {
+            "id": "run/job-splitting/result-formatters/extractors/combinator-extractor.js", 
+            "path": "run/job-splitting/result-formatters/extractors/combinator-extractor.js", 
+            "original_path": "run/job-splitting/result-formatters/extractors/combinator-extractor.js"
+        }, 
+        "line": 25, 
+        "column": 17, 
+        "message": "Bracket object notation with user input is present, this might allow an attacker to access all properties of the object and even it's prototype, leading to possible code execution.", 
+        "checker_name": "gitlab.eslint.detect-object-injection", 
+        "severity": "MEDIUM", 
+        "report_hash": null, 
+        "analyzer_name": "semgrep", 
+        "category": null, 
+        "type": null, 
+        "source_code_comments": [], 
+        "review_status": "unreviewed", 
+        "bug_path_events": [
+            {"file": {
+                "id": "run/job-splitting/result-formatters/extractors/combinator-extractor.js", 
+                "path": "run/job-splitting/result-formatters/extractors/combinator-extractor.js", 
+                "original_path": "run/job-splitting/result-formatters/extractors/combinator-extractor.js"}, 
+                "line": 25, "column": 17, "message": "Bracket object notation with user input is present, this might allow an attacker to access all properties of the object and even it's prototype, leading to possible code execution.", 
+                "range": null
+            }
+        ], 
+        "bug_path_positions": [], 
+        "notes": [], 
+        "macro_expansions": []
+}
+event: {
+    "file": {
+        "id": "run/job-splitting/result-formatters/extractors/combinator-extractor.js", 
+        "path": "run/job-splitting/result-formatters/extractors/combinator-extractor.js", 
+        "original_path": "run/job-splitting/result-formatters/extractors/combinator-extractor.js"
+        }, 
+    "line": 25, 
+    "column": 17, 
+    "message": "Bracket object notation with user input is present, this might allow an attacker to access all properties of the object and even it's prototype, leading to possible code execution.", 
+    "range": ''}

@@ -33,6 +33,7 @@ if __name__ == '__main__':
 from codechecker_report_converter.report.report_file import \
     SUPPORTED_ANALYZER_EXTENSIONS
 from codechecker_report_converter.report.parser import plist
+from codechecker_report_converter.report.parser import sarif
 
 LOG = logging.getLogger('report-converter')
 
@@ -150,7 +151,7 @@ def __add_arguments_to_parser(parser):
                         dest='export',
                         metavar='EXPORT',
                         choices=SUPPORTED_ANALYZER_EXTENSIONS,
-                        default=plist.EXTENSION,
+                        default=sarif.EXTENSION,
                         help="Specify the export format of the converted "
                              "reports. Currently supported export types "
                              "are: " + ', '.join(sorted(
@@ -233,7 +234,6 @@ Supported analyzers:
                   ', '.join(invalid_metadata_values),
                   ', '.join(supported_metadata_keys))
         sys.exit(1)
-
     return transform_output(
         args.input, args.type, args.output_dir, args.filename, args.export,
         args.clean, valid_metadata_values)
