@@ -379,6 +379,7 @@ def get_reports(
     """ Get reports from the given analyzer result file. """
     reports = report_file.get_reports(
         analyzer_result_file_path, checker_labels)
+    #print("store, reports: ", reports)
 
     # CppCheck generates a '0' value for the report hash. In case all of the
     # reports in a result file contain only a hash with '0' value, overwrite

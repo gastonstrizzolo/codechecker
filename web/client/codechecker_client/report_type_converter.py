@@ -64,7 +64,7 @@ def to_report(
                     e.startCol,
                     Range(e.startLine, e.startCol, e.endLine, e.endCol)))
 
-    return Report(
+    myreport = Report(
         get_file(report.fileId, report.checkedFile),
         report.line,
         report.column,
@@ -77,6 +77,8 @@ def to_report(
         bug_path_positions=bug_path_positions,
         notes=notes,
         macro_expansions=macro_expansions)
+#    print("report_type_converter, to report, Report:", myreport)
+    return myreport
 
 
 def to_report_data(
@@ -84,7 +86,7 @@ def to_report_data(
 ) -> ReportData:
     """ Convert a Report object to a Thrift ReportData type. """
     severity = Severity._NAMES_TO_VALUES[report.severity or 'UNSPECIFIED']
-    return ReportData(
+    myreport = ReportData(
         checkerId=report.checker_name,
         bugHash=report.report_hash,
         checkedFile=report.file.path,
@@ -94,3 +96,5 @@ def to_report_data(
         severity=severity,
         analyzerName=report.analyzer_name,
         bugPathLength=len(report.bug_path_events))
+ #   print("report_type_converter, to_report_data, Report:", myreport)
+    return myreport

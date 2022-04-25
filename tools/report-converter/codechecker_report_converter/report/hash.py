@@ -15,8 +15,6 @@ from enum import Enum
 
 from typing import List, Tuple
 
-from pyparsing import line
-
 from codechecker_report_converter.report import Report
 
 LOG = logging.getLogger('report-converter')
@@ -72,28 +70,24 @@ def __get_report_hash_path_sensitive(report: Report) -> List[str]:
      * 'column numbers' from the main diag section
      * 'range column numbers' from bug_path_positions.
     """
-    breakpoint()
     try:
-#        print("report: ", report)
-        event = report["bug_path_events"][-1]
-#        print("event:", event)
-        from_col = event['column']
-        until_col = event['column']
+        event = report.bug_path_events[-1]
 
-#        print("from col", from_col)
-#        print("until col", until_col)
+        from_col = event.column
+        until_col = event.column
+
         # WARNING!!! Changing the error handling type for encoding errors
         # can influence the hash content!
-        line_content = report["file"].get_line(event["line"])
-#        print("line content", line_content) 
-        if line_content == '' and \
-                not os.path.isfile(report["file"]["original_path"]):
-            LOG.error("Failed to generate report hash. %s does not exists!",
-                      report["file"]["original_path"])
+        line_content = report.file.get_line(event.line)
 
-        hash_content = [report["file"]["name"],
-                        report["checker_name"],
-                        event["message"],
+        if line_content == '' and \
+                not os.path.isfile(report.file.original_path):
+            LOG.error("Failed to generate report hash. %s does not exists!",
+                      report.file.original_path)
+
+        hash_content = [report.file.name,
+                        report.checker_name,
+                        event.message,
                         line_content,
                         str(from_col),
                         str(until_col)]
@@ -122,14 +116,13 @@ def __get_report_hash_context_free(report: Report) -> List[str]:
        whitespaces from the source content are removed.
      * 'column numbers' from the main diag sections location.
     """
-    breakpoint()
     try:
-        from_col = report["column"]
-        until_col = report["column"]
+        from_col = report.column
+        until_col = report.column
 
         # WARNING!!! Changing the error handling type for encoding errors
         # can influence the hash content!
-        line_content = report["file"].get_line(report["line"])
+        line_content = report.file.get_line(report.line)
 
         # Remove whitespaces so the hash will be independet of the
         # source code indentation.
@@ -141,13 +134,13 @@ def __get_report_hash_context_free(report: Report) -> List[str]:
         from_col = new_col
 
         if line_content == '' and \
-                not os.path.isfile(report["file"]['original_path']):
+                not os.path.isfile(report.file.original_path):
             LOG.error("Failed to include soruce line in the report hash.")
-            LOG.error('%s does not exists!', report["file"]["original_path"])
+            LOG.error('%s does not exists!', report.file.original_path)
 
         return [
-            report["file"]["name"],
-            report["message"],
+            report.file.name,
+            report.message,
             line_content,
             str(from_col),
             str(until_col)]
@@ -163,7 +156,6 @@ def __get_report_hash_diagnostic_message(report: Report) -> List[str]:
     The hash will contain the same information as the CONTEXT_FREE hash +
     'bug step messages' from events.
     """
-    breakpoint()
     try:
         hash_content = __get_report_hash_context_free(report)
 
@@ -180,7 +172,7 @@ def __get_report_hash_diagnostic_message(report: Report) -> List[str]:
 def get_report_hash(report: Report, hash_type: HashType) -> str:
     """ Get report hash for the given diagnostic. """
     hash_content = None
-    breakpoint()
+
     if hash_type == HashType.CONTEXT_FREE:
         hash_content = __get_report_hash_context_free(report)
     elif hash_type == HashType.PATH_SENSITIVE:
@@ -198,15 +190,14 @@ def get_report_path_hash(report: Report) -> str:
 
     This can be used to filter deduplications of multiple reports.
     """
-    breakpoint()
     report_path_hash = ''
-    for event in report["bug_path_events"]:
+    for event in report.bug_path_events:
         line = str(event.line)
         col = str(event.column)
 
         report_path_hash += f"{line}|{col}|{event.message}{event.file.name}"
 
-    report_path_hash += report["checker_name"]
+    report_path_hash += report.checker_name
 
     if not report_path_hash:
         LOG.error('Failed to generate report path hash: %s', report)

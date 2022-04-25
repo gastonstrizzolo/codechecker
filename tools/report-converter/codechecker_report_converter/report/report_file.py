@@ -54,11 +54,13 @@ def get_reports(
 ) -> List[Report]:
     """ Get reports from the given report file. """
     parser = get_parser(analyzer_result_file_path, checker_labels, file_cache)
-
+    #print("report_file, parser: ",parser)
     if parser.EXTENSION == 'plist':
         return parser.get_reports(analyzer_result_file_path, source_dir_path)
     if parser.EXTENSION == 'sarif':
-        return parser.get_reports(analyzer_result_file_path)
+        reports_sarif = parser.get_reports(analyzer_result_file_path)
+        #print("reports sarif en report_file :", reports_sarif)
+        return reports_sarif
 
     return []
 

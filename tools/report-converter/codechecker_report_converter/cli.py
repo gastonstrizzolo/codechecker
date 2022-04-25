@@ -234,6 +234,7 @@ Supported analyzers:
                   ', '.join(invalid_metadata_values),
                   ', '.join(supported_metadata_keys))
         sys.exit(1)
+        
     return transform_output(
         args.input, args.type, args.output_dir, args.filename, args.export,
         args.clean, valid_metadata_values)

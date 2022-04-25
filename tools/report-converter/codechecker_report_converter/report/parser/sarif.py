@@ -12,6 +12,7 @@ Parse the sarif output of an analyzer
 import json
 import logging
 import os
+from pathlib import Path
 
 from urllib.parse import urlparse
 from typing import Any, Dict, List, NamedTuple, Optional, Tuple
@@ -29,6 +30,10 @@ LOG = logging.getLogger('report-converter')
 
 EXTENSION = 'sarif'
 
+def remove_prefix(text, prefix):
+    if text.startswith(prefix):
+        return text[len(prefix):]
+    return text  # or whatever
 
 class ThreadFlowInfo(NamedTuple):
     bug_path_events: List[BugPathEvent] = []
@@ -46,6 +51,8 @@ class Parser(BaseParser):
     ) -> List[Report]:
         """ Get reports from the given analyzer result file. """
         data = util.load_json_or_empty(analyzer_result_file_path, {})
+
+#        print("data: ", data)
 
         reports: List[Report] = []
 
@@ -66,6 +73,8 @@ class Parser(BaseParser):
                 thread_flow_info = self._process_code_flows(
                     result, rule_id, rules)
                 for location in result.get("locations", []):
+
+#                    print("sarif, get_reports, location: ", location)
                     file, rng = self._process_physical_location(location)
                     if not (file and rng):
                         continue
@@ -148,6 +157,7 @@ class Parser(BaseParser):
         physical_loc = location.get("physicalLocation")
         if physical_loc:
             file = self._get_file(physical_loc)
+        #    print("sarif, _process_physical_location, file: ", file)
             rng = self._get_range(physical_loc)
             return file, rng
 
@@ -171,16 +181,23 @@ class Parser(BaseParser):
         physical_loc: Dict
     ) -> Optional[File]:
         """ Get file path. """
+        #print("sarif, get_file, physical_loc: ", physical_loc)
         artifact_loc = physical_loc.get("artifactLocation")
         if not artifact_loc:
             return None
 
-        uri = urlparse(artifact_loc.get("uri"))
-        if uri is None:
-            return None
+        #print("sarif, get_file, artifact_loc: ", artifact_loc)
+        
 
-        file_path = os.path.join(uri.netloc, uri.path)
+        file_path = artifact_loc.get("uri")
+        #if uri is None:
+        #    return None
+#
+        #file_path = os.path.join(uri.netloc, uri.path)
 
+#        file_path = remove_prefix(artifact_loc.get("uri"), "file://", )   
+             
+        #print("sarif, get_file, file_path: ", file_path)
         return get_or_create_file(file_path, self._file_cache)
 
     def _process_message(
@@ -208,6 +225,9 @@ class Parser(BaseParser):
     ):
         """ Converts the given reports to sarif format. """
 
+        #tool_name, tool_version = self._get_tool_info()
+        tool_name = 'semgrep'
+        tool_version = 'tool_Version'
         rules = {}
         results = []
         for report in reports:
@@ -227,8 +247,8 @@ class Parser(BaseParser):
             "runs": [{
                 "tool": {
                     "driver": {
-                        "name": "tool_name",
-                        "version": "tool_version",
+                        "name": tool_name,
+                        "version": tool_version,
                         "rules": list(rules.values())
                     }
                 },
@@ -246,7 +266,9 @@ class Parser(BaseParser):
             "locations": [{
                 "physicalLocation": {
                     "artifactLocation": {
-                        "uri": f"file://{report.file.original_path}"
+                        "uri": report.file.original_path
+#                         "uri": report.file.original_path
+#                         "uri": f"file://{report.file.original_path}"                        
                     },
                     "region": {
                         "startLine": report.line,
@@ -322,7 +344,8 @@ class Parser(BaseParser):
             "location": {
                 "physicalLocation": {
                     "artifactLocation": {
-                        "uri": f"file://{pos.file.original_path}"
+                        "uri": pos.file.original_path
+                        #"uri": f"file://{pos.file.original_path}"
                     },
                     "region": region
                 }

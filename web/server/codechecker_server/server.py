@@ -233,12 +233,12 @@ class RequestHandler(SimpleHTTPRequestHandler):
         client_host, client_port, is_ipv6 = \
             RequestHandler._get_client_host_port(self.client_address)
         self.auth_session = self.__check_session_cookie()
-
+        LOG.debug("do_GET, client host, client port", client_host, client_port)
         username = self.auth_session.user if self.auth_session else 'Anonymous'
         LOG.debug("%s:%s -- [%s] GET %s",
                   client_host if not is_ipv6 else '[' + client_host + ']',
                   client_port, username, self.path)
-
+        LOG.debug("do_GET, self.path:", self.path)
         if self.path == '/':
             self.path = 'index.html'
             SimpleHTTPRequestHandler.do_GET(self)
