@@ -30,11 +30,6 @@ LOG = logging.getLogger('report-converter')
 
 EXTENSION = 'sarif'
 
-def remove_prefix(text, prefix):
-    if text.startswith(prefix):
-        return text[len(prefix):]
-    return text  # or whatever
-
 class ThreadFlowInfo(NamedTuple):
     bug_path_events: List[BugPathEvent] = []
     bug_path_positions: List[BugPathPosition] = []
@@ -44,7 +39,7 @@ class ThreadFlowInfo(NamedTuple):
 
 class Parser(BaseParser):
     EXTENSION = 'sarif'
-
+    
     def get_reports(
         self,
         analyzer_result_file_path: str

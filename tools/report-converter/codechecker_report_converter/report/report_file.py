@@ -58,6 +58,7 @@ def get_reports(
     if parser.EXTENSION == 'plist':
         return parser.get_reports(analyzer_result_file_path, source_dir_path)
     if parser.EXTENSION == 'sarif':
+        breakpoint()
         reports_sarif = parser.get_reports(analyzer_result_file_path)
         #print("reports sarif en report_file :", reports_sarif)
         return reports_sarif
