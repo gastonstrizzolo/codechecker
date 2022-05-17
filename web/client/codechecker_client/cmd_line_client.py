@@ -20,6 +20,10 @@ import shutil
 import time
 from typing import Dict, Iterable, List, Optional, Set, Tuple, Union
 
+import sys
+sys.path.pop(0)
+import pdb
+
 from codechecker_api.codeCheckerDBAccess_v6 import constants, ttypes
 from codechecker_api_shared.ttypes import RequestFailed
 
@@ -836,7 +840,7 @@ def handle_diff_results(args):
         get only necessarry line contents.
         """
         reports = []
-
+        #pdb.set_trace()
         LOG.info("reports_data en convert_report_data_to_report",reports_data)
 
         if not reports_data:

@@ -69,7 +69,7 @@ class Parser(BaseParser):
                     result, rule_id, rules)
                 for location in result.get("locations", []):
 
-#                    print("sarif, get_reports, location: ", location)
+                    #print("sarif, get_reports, location: ", location)
                     file, rng = self._process_physical_location(location)
                     if not (file and rng):
                         continue
@@ -89,6 +89,16 @@ class Parser(BaseParser):
                         bug_path_positions=thread_flow_info.bug_path_positions,
                         notes=thread_flow_info.notes,
                         macro_expansions=thread_flow_info.macro_expansions)
+
+                    report = Report(
+                        analyzer_result_file_path=analyzer_result_file_path,
+                        file=file,
+                        line=rng.start_line,
+                        column=rng.start_col,
+                        message=message,
+                        checker_name='unknown',
+                        severity=severity,
+                        analyzer_name='semgrep')
 
                     if report.report_hash is None:
                         report.report_hash = get_report_hash(
@@ -152,7 +162,7 @@ class Parser(BaseParser):
         physical_loc = location.get("physicalLocation")
         if physical_loc:
             file = self._get_file(physical_loc)
-        #    print("sarif, _process_physical_location, file: ", file)
+            # print("sarif, _process_physical_location, file: ", file)
             rng = self._get_range(physical_loc)
             return file, rng
 
@@ -176,12 +186,12 @@ class Parser(BaseParser):
         physical_loc: Dict
     ) -> Optional[File]:
         """ Get file path. """
-        #print("sarif, get_file, physical_loc: ", physical_loc)
+        # print("sarif, get_file, physical_loc: ", physical_loc)
         artifact_loc = physical_loc.get("artifactLocation")
         if not artifact_loc:
             return None
 
-        #print("sarif, get_file, artifact_loc: ", artifact_loc)
+        # print("sarif, get_file, artifact_loc: ", artifact_loc)
         
 
         file_path = artifact_loc.get("uri")

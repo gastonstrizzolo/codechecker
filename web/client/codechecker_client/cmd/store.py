@@ -13,13 +13,13 @@ database.
 
 import argparse
 import base64
-from cmath import log
 import functools
 import hashlib
 import json
 import os
 import sys
 import tempfile
+from this import d
 import zipfile
 import zlib
 
@@ -44,6 +44,10 @@ from codechecker_common.checker_labels import CheckerLabels
 
 from codechecker_web.shared import webserver_context, host_check
 from codechecker_web.shared.env import get_default_workspace
+
+import sys
+sys.path.pop(0)
+import pdb
 
 try:
     from codechecker_client.blame_info import assemble_blame_info
@@ -378,9 +382,9 @@ def get_reports(
     checker_labels: CheckerLabels
 ) -> List[Report]:
     """ Get reports from the given analyzer result file. """
+#    pdb.set_trace()
     reports = report_file.get_reports(
         analyzer_result_file_path, checker_labels)
-    #print("store, reports: ", reports)
 
     # CppCheck generates a '0' value for the report hash. In case all of the
     # reports in a result file contain only a hash with '0' value, overwrite
@@ -407,6 +411,9 @@ def parse_analyzer_result_files(
             analyzer_result_files, zip_iter(
                 functools.partial(get_reports, checker_labels=checker_labels),
                 analyzer_result_files)):
+        ## ########################## esto queda vacio
+        ##print(analyzer_result_file_reports)
+            ##defaultdict(<class 'list'>, {})
         analyzer_result_file_reports[file_path] = reports
 
     return analyzer_result_file_reports
@@ -417,10 +424,7 @@ def assemble_zip(inputs, zip_file, client, checker_labels: CheckerLabels):
     contanining analysis related information into a zip file which
     will be sent to the server.
     """
-    print(inputs)
-    LOG.debug("inputs: %s", inputs)
-    LOG.info("inputs: %s", inputs)
-    LOG.warning("inputs: %s", inputs)
+    pdb.set_trace()
     files_to_compress = set()
     analyzer_result_file_paths = []
     stats = StorageZipStatistics()
@@ -451,33 +455,16 @@ def assemble_zip(inputs, zip_file, client, checker_labels: CheckerLabels):
         analyzer_result_file_reports = parse_analyzer_result_files(
             analyzer_result_file_paths, checker_labels)
     else:
-        #
-        #
-        #---------------------- aca no pasa nada -.-
         with ProcessPoolExecutor() as executor:
             analyzer_result_file_reports = parse_analyzer_result_files(
                  analyzer_result_file_paths, checker_labels, executor.map)
 
     LOG.info("Processing report files done.")
 
-    print(analyzer_result_file_paths)
-    LOG.debug("analyzer_result_file_reports: %s", analyzer_result_file_reports)
-    LOG.info("analyzer_result_file_reports: %s", analyzer_result_file_reports)
-    LOG.warning("analyzer_result_file_reports: %s", analyzer_result_file_reports)
-        
-
     changed_files = set()
     file_paths = set()
     file_report_positions: FileReportPositions = defaultdict(set)
     for file_path, reports in analyzer_result_file_reports.items():
-        print(stats)
-        LOG.debug("report: %s", report)
-        LOG.info("report: %s", report)
-        LOG.warning("report: %s", report)
-        print(file_path)
-        LOG.debug("file_path: %s", file_path)
-        LOG.info("file_path: %s", file_path)
-        LOG.warning("file_path: %s", file_path)
         files_to_compress.add(file_path)
         stats.num_of_analyzer_result_files += 1
 
@@ -490,17 +477,6 @@ def assemble_zip(inputs, zip_file, client, checker_labels: CheckerLabels):
             file_paths.update(report.original_files)
             file_report_positions[report.file.original_path].add(report.line)
 
-            print(stats)
-            LOG.debug("report: %s", stats)
-            LOG.info("report: %s", report)
-            LOG.warning("report: %s", report)
-    
-
-    print(stats)
-    LOG.debug("stats: %s", stats.num_of_blame_information)
-    LOG.info("stats: %s", stats.num_of_source_files)
-    LOG.warning("stats: %s", stats.num_of_source_files_with_source_code_comment)
-    
     if changed_files:
         reports_helper.dump_changed_files(changed_files)
         sys.exit(1)
@@ -557,6 +533,7 @@ def assemble_zip(inputs, zip_file, client, checker_labels: CheckerLabels):
     with zipfile.ZipFile(zip_file, 'a', allowZip64=True) as zipf:
         # Add the files to the zip which will be sent to the server.
         for file_path in files_to_compress:
+            print(files_to_compress)
             _, file_name = os.path.split(file_path)
 
             # Create a unique report directory name.
@@ -706,6 +683,7 @@ def storing_analysis_statistics(client, inputs, run_name):
     try:
         limits = client.getAnalysisStatisticsLimits()
 
+        #pdb.set_trace()
         statistics_files = get_analysis_statistics(inputs, limits)
 
         if not statistics_files:
@@ -790,7 +768,7 @@ def main(args):
 
     # Setup connection to the remote server.
     client = libclient.setup_client(args.product_url)
-    LOG.debug("client: %s", client)
+
     zip_file_handle, zip_file = tempfile.mkstemp('.zip')
     LOG.debug("Will write mass store ZIP to '%s'...", zip_file)
 
@@ -808,7 +786,6 @@ def main(args):
             sys.exit(1)
 
         zip_size = os.stat(zip_file).st_size
-        LOG.debug("zip size: %s", zip_size)
         if zip_size > MAX_UPLOAD_SIZE:
             LOG.error("The result list to upload is too big (max: %s): %s.",
                       sizeof_fmt(MAX_UPLOAD_SIZE), sizeof_fmt(zip_size))
@@ -817,7 +794,6 @@ def main(args):
         b64zip = ""
         with open(zip_file, 'rb') as zf:
             b64zip = base64.b64encode(zf.read()).decode("utf-8")
-            LOG.debug("b64zip: %s", b64zip)
         if len(b64zip) == 0:
             LOG.info("Zip content is empty, nothing to store!")
             sys.exit(1)
@@ -838,6 +814,7 @@ def main(args):
                             description)
 
         # Storing analysis statistics if the server allows them.
+        #pdb.set_trace()
         if client.allowsStoringAnalysisStatistics():
             storing_analysis_statistics(client, args.input, args.name)
 

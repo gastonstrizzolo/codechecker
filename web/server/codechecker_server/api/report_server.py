@@ -57,7 +57,9 @@ from ..database.run_db_model import \
 from .thrift_enum_helper import detection_status_enum, \
     detection_status_str, review_status_enum, review_status_str, \
     report_extended_data_type_enum
-
+import sys
+sys.path.pop(0)
+import pdb
 
 LOG = get_logger('server')
 
