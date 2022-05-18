@@ -10,7 +10,7 @@ ENV CC_REPO ${CC_REPO}
 ARG CC_VERSION=master
 ENV CC_VERSION ${CC_VERSION}
 
-COPY hooks/ /hooks
+COPY ./web/docker/hooks/ /hooks
 
 ARG DEBIAN_FRONTEND=noninteractive
 RUN set -x && apt-get update -qq \
@@ -23,9 +23,10 @@ RUN set -x && apt-get update -qq \
     && apt-get install -y nodejs
 
 # Download CodeChecker release.
-RUN git clone ${CC_REPO} /codechecker
+# RUN git clone ${CC_REPO} /codechecker
 WORKDIR /codechecker
-RUN git checkout ${CC_VERSION}
+# RUN git checkout ${CC_VERSION}
+COPY . .
 
 # Run script before the package generation.
 RUN chmod a+x /hooks/before_build.sh && sync && /hooks/before_build.sh
@@ -126,7 +127,7 @@ RUN chown codechecker:codechecker /codechecker
 
 ENV PATH="/codechecker/bin:$PATH"
 
-COPY ./entrypoint.sh /usr/local/bin/
+COPY ./web/docker/entrypoint.sh /usr/local/bin/
 RUN chmod a+x /usr/local/bin/entrypoint.sh \
   && chown codechecker:codechecker /usr/local/bin/entrypoint.sh
 

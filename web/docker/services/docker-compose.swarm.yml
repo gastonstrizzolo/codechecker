@@ -24,10 +24,8 @@ services:
       - codechecker
 
   codechecker:
-    image: codechecker/codechecker-web:latest
+    image: codechecker/codechecker-web:mybuild
     deploy:
-        mode: replicated
-        replicas: 3
         restart_policy:
           condition: any
         placement:
@@ -35,8 +33,10 @@ services:
             - node.labels.codechecker-server == true
     volumes:
       - workspace:/workspace
+      - /home/ariel/Desktop/Sources/gastoncodechecker/web/server/codechecker_server/api:/codechecker/lib/python3/codechecker_server/api
     command: >
       CodeChecker server
+        --verbose debug
         --workspace /workspace
         --postgresql --dbaddress db --dbport 5432 --dbusername $USER
         --not-host-only

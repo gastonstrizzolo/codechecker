@@ -19,7 +19,6 @@ import json
 import os
 import sys
 import tempfile
-from this import d
 import zipfile
 import zlib
 
@@ -44,10 +43,6 @@ from codechecker_common.checker_labels import CheckerLabels
 
 from codechecker_web.shared import webserver_context, host_check
 from codechecker_web.shared.env import get_default_workspace
-
-import sys
-sys.path.pop(0)
-import pdb
 
 try:
     from codechecker_client.blame_info import assemble_blame_info
@@ -382,7 +377,6 @@ def get_reports(
     checker_labels: CheckerLabels
 ) -> List[Report]:
     """ Get reports from the given analyzer result file. """
-#    pdb.set_trace()
     reports = report_file.get_reports(
         analyzer_result_file_path, checker_labels)
 
@@ -395,7 +389,6 @@ def get_reports(
 
         reports = report_file.get_reports(
             analyzer_result_file_path, checker_labels)
-
     return reports
 
 
@@ -411,9 +404,7 @@ def parse_analyzer_result_files(
             analyzer_result_files, zip_iter(
                 functools.partial(get_reports, checker_labels=checker_labels),
                 analyzer_result_files)):
-        ## ########################## esto queda vacio
-        ##print(analyzer_result_file_reports)
-            ##defaultdict(<class 'list'>, {})
+
         analyzer_result_file_reports[file_path] = reports
 
     return analyzer_result_file_reports
@@ -424,7 +415,7 @@ def assemble_zip(inputs, zip_file, client, checker_labels: CheckerLabels):
     contanining analysis related information into a zip file which
     will be sent to the server.
     """
-    pdb.set_trace()
+
     files_to_compress = set()
     analyzer_result_file_paths = []
     stats = StorageZipStatistics()
@@ -533,7 +524,6 @@ def assemble_zip(inputs, zip_file, client, checker_labels: CheckerLabels):
     with zipfile.ZipFile(zip_file, 'a', allowZip64=True) as zipf:
         # Add the files to the zip which will be sent to the server.
         for file_path in files_to_compress:
-            print(files_to_compress)
             _, file_name = os.path.split(file_path)
 
             # Create a unique report directory name.
@@ -682,8 +672,6 @@ def storing_analysis_statistics(client, inputs, run_name):
     LOG.debug("Will write failed store ZIP to '%s'...", zip_file)
     try:
         limits = client.getAnalysisStatisticsLimits()
-
-        #pdb.set_trace()
         statistics_files = get_analysis_statistics(inputs, limits)
 
         if not statistics_files:
@@ -814,7 +802,7 @@ def main(args):
                             description)
 
         # Storing analysis statistics if the server allows them.
-        #pdb.set_trace()
+        #
         if client.allowsStoringAnalysisStatistics():
             storing_analysis_statistics(client, args.input, args.name)
 

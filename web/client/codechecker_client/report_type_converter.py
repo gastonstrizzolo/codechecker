@@ -16,16 +16,12 @@ from codechecker_api.codeCheckerDBAccess_v6.ttypes import \
 from codechecker_report_converter.report import BugPathEvent, \
     BugPathPosition, File, MacroExpansion, Range, Report
 
-import sys
-sys.path.pop(0)
-import pdb
-
 def to_report(
     report: ReportData,
     get_file: Callable[[int, str], File]
 ) -> Report:
     """ Create a Report object from the given thrift report data. """
-    pdb.set_trace()
+
     severity = Severity._VALUES_TO_NAMES[report.severity] \
         if report.severity else 'UNSPECIFIED'
 
@@ -89,7 +85,7 @@ def to_report_data(
     report: Report
 ) -> ReportData:
     """ Convert a Report object to a Thrift ReportData type. """
-    pdb.set_trace()
+
     severity = Severity._NAMES_TO_VALUES[report.severity or 'UNSPECIFIED']
     myreport = ReportData(
         checkerId=report.checker_name,

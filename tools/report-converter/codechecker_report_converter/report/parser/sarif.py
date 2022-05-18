@@ -30,27 +30,32 @@ LOG = logging.getLogger('report-converter')
 
 EXTENSION = 'sarif'
 
+class Location(NamedTuple):
+    """
+    Location of a bug.
+    """
+    file: File
+    range: Range
+    message: Optional[str] = ""
+
 class ThreadFlowInfo(NamedTuple):
     bug_path_events: List[BugPathEvent] = []
-    bug_path_positions: List[BugPathPosition] = []
     notes: List[BugPathEvent] = []
     macro_expansions: List[BugPathEvent] = []
 
 
 class Parser(BaseParser):
     EXTENSION = 'sarif'
-    
+
     def get_reports(
         self,
         analyzer_result_file_path: str
     ) -> List[Report]:
+
         """ Get reports from the given analyzer result file. """
         data = util.load_json_or_empty(analyzer_result_file_path, {})
 
-#        print("data: ", data)
-
         reports: List[Report] = []
-
 
         for run in data.get("runs", []):
             rules = self._get_rules(run)
@@ -60,45 +65,36 @@ class Parser(BaseParser):
 
                 message = self._process_message(
                     result["message"], rule_id, rules)  # §3.11
-            
+
                 severity = self.get_severity_from_level(rule_id, rules)
-                
+
                 analyzer_name = run["tool"]["driver"]["name"]
 
-                thread_flow_info = self._process_code_flows(
-                    result, rule_id, rules)
                 for location in result.get("locations", []):
+                    thread_flow_info = self._process_code_flows(
+                        result, rule_id, rules)
 
                     #print("sarif, get_reports, location: ", location)
                     file, rng = self._process_physical_location(location)
                     if not (file and rng):
                         continue
 
+                    bug_path_positions = [BugPathPosition(file, rng)]
                     bug_path_events = thread_flow_info.bug_path_events or None
 
                     report = Report(
-                        file, 
-                        rng.start_line, 
+                        file,
+                        rng.start_line,
                         rng.start_col,
-                        message, 
-                        rule_id, 
+                        message,
+                        rule_id,
                         severity,
                         analyzer_name=analyzer_name,
                         analyzer_result_file_path=analyzer_result_file_path,
                         bug_path_events=bug_path_events,
-                        bug_path_positions=thread_flow_info.bug_path_positions,
+                        bug_path_positions=bug_path_positions,
                         notes=thread_flow_info.notes,
                         macro_expansions=thread_flow_info.macro_expansions)
-
-                    report = Report(
-                        analyzer_result_file_path=analyzer_result_file_path,
-                        file=file,
-                        line=rng.start_line,
-                        column=rng.start_col,
-                        message=message,
-                        checker_name='unknown',
-                        severity=severity,
-                        analyzer_name='semgrep')
 
                     if report.report_hash is None:
                         report.report_hash = get_report_hash(
@@ -126,33 +122,39 @@ class Parser(BaseParser):
     ) -> Tuple[List[BugPathEvent], List[BugPathEvent]]:
         """ """
         thread_flow_info = ThreadFlowInfo()
+
         for code_flow in result.get("codeFlows", []):
             for thread_flow in code_flow.get("threadFlows", []):  # §3.36.3
-                for location in thread_flow["locations"]:
-                    if "message" not in location:
-                        # TODO: this is a bug path position
-                        continue
-
-                    message = self._process_message(
-                        location["message"], rule_id, rules)
-
-                    file, rng = self._process_physical_location(location)
-                    if not (file and rng):
-                        continue
-
-                    importance = location.get("importance")
-                    if importance == 'important':
-                        pass
-                    elif importance == 'essential':
-                        pass
-                    else:
-                        pass
+                for raw_location in thread_flow["locations"]:
+                    location = self._process_location(raw_location, rule_id, rules)
 
                     # TODO: check the importance field.
-                    thread_flow_info.bug_path_events.append(BugPathEvent(
-                        message, file, rng.start_line, rng.start_col, rng))
+                    thread_flow_info.bug_path_events.append(
+                        BugPathEvent(
+                            location.message,
+                            location.file,
+                            location.range.start_line,
+                            location.range.start_col,
+                            location.range
+                        )
+                    )
 
         return thread_flow_info
+
+    def _process_location(
+        self,
+        location: Dict,
+        rule_id: str,
+        rules: Dict[str, Dict]
+    ) -> Optional[Tuple[str, Optional[File], Optional[Range]]]:
+        message = "<Unknown message>"
+        if "message" in location:
+            message = self._process_message(
+                location["message"], rule_id, rules)
+
+        file, rng = self._process_physical_location(location)
+
+        return Location(message=message, file=file, range=rng)
 
     def _process_physical_location(
         self,
@@ -160,6 +162,7 @@ class Parser(BaseParser):
     ) -> Tuple[Optional[File], Optional[Range]]:
         """ """
         physical_loc = location.get("physicalLocation")
+        # Physical loc is required, must always be present.
         if physical_loc:
             file = self._get_file(physical_loc)
             # print("sarif, _process_physical_location, file: ", file)
@@ -192,7 +195,7 @@ class Parser(BaseParser):
             return None
 
         # print("sarif, get_file, artifact_loc: ", artifact_loc)
-        
+
 
         file_path = artifact_loc.get("uri")
         #if uri is None:
@@ -200,8 +203,8 @@ class Parser(BaseParser):
 #
         #file_path = os.path.join(uri.netloc, uri.path)
 
-#        file_path = remove_prefix(artifact_loc.get("uri"), "file://", )   
-             
+#        file_path = remove_prefix(artifact_loc.get("uri"), "file://", )
+
         #print("sarif, get_file, file_path: ", file_path)
         return get_or_create_file(file_path, self._file_cache)
 
@@ -273,7 +276,7 @@ class Parser(BaseParser):
                     "artifactLocation": {
                         "uri": report.file.original_path
 #                         "uri": report.file.original_path
-#                         "uri": f"file://{report.file.original_path}"                        
+#                         "uri": f"file://{report.file.original_path}"
                     },
                     "region": {
                         "startLine": report.line,

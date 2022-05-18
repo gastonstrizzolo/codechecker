@@ -18,11 +18,6 @@ from codechecker_report_converter.report.parser import plist
 from codechecker_report_converter.report.parser import sarif
 from codechecker_report_converter.report.parser.base import AnalyzerInfo
 
-import sys
-sys.path.pop(0)
-import pdb
-
-
 LOG = logging.getLogger('report-converter')
 
 
@@ -48,7 +43,7 @@ def get_parser(
         return plist.Parser(checker_labels, file_cache)
     if analyzer_result_file_path.endswith(f".{sarif.EXTENSION}"):
         print('UIAHSUHSAUISH')
-        return sarif.Parser(checker_labels, file_cache)            
+        return sarif.Parser(checker_labels, file_cache)
 ## es none ese checker labels
 
 def get_reports(

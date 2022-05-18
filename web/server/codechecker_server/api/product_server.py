@@ -9,10 +9,6 @@
 Handle Thrift requests for the product manager service.
 """
 
-import sys
-sys.path.pop(0)
-import pdb
-
 import os
 import random
 
@@ -96,7 +92,6 @@ class ThriftProductHandler:
         Retrieve the product connection object and create a Thrift Product
         object for the given product record in the database.
         """
-        #pdb.set_trace()
         server_product = self.__server.get_product(product.endpoint)
         if not server_product:
             LOG.info("Product '%s' was found in the configuration "
@@ -215,7 +210,6 @@ class ThriftProductHandler:
 
         The request MUST be routed as /product-name/ProductService!
         """
-        #pdb.set_trace()
         if not self.__product:
             msg = "Requested current product from ProductService but the " \
                   "request came through the main endpoint."

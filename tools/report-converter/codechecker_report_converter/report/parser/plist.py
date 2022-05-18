@@ -232,7 +232,6 @@ class Parser(BaseParser):
             LOG.warning(type(ex))
             LOG.warning(ex)
         finally:
-            print(reports)
             return reports
 
     def __create_report(

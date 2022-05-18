@@ -735,6 +735,7 @@ class MassStoreRun:
             session.flush()
 
             LOG.debug("Storing bug path positions.")
+
             for i, p in enumerate(report.bug_path_positions):
                 session.add(BugReportPoint(
                     p.range.start_line, p.range.start_col,
@@ -742,12 +743,14 @@ class MassStoreRun:
                     i, file_path_to_id[p.file.path], db_report.id))
 
             LOG.debug("Storing bug path events.")
-            for i, event in enumerate(report.bug_path_events):
-                session.add(BugPathEvent(
-                    event.range.start_line, event.range.start_col,
-                    event.range.end_line, event.range.end_col,
-                    i, event.message, file_path_to_id[event.file.path],
-                    db_report.id))
+            # for i, event in enumerate(report.bug_path_events):
+            #     print(i, event)
+
+            #     session.add(BugPathEvent(
+            #         event.range.start_line, event.range.start_col,
+            #         event.range.end_line, event.range.end_col,
+            #         i, event.message, file_path_to_id[event.file.path],
+            #         db_report.id))
 
             LOG.debug("Storing notes.")
             for note in report.notes:
@@ -955,8 +958,10 @@ class MassStoreRun:
 
         # Processing analyzer result files.
         processed_result_file_count = 0
+
         LOG.info("ROOT: %s", str(report_dir))
         LOG.info("OS: %s", str(os.walk(report_dir)))
+
         for root_dir_path, _, report_file_paths in os.walk(report_dir):
             LOG.debug("Get reports from '%s' directory", root_dir_path)
 
@@ -967,19 +972,17 @@ class MassStoreRun:
             disabled_checkers.update(mip.disabled_checkers)
 
             for f in report_file_paths:
-                for k in f:
-                    print("FILE: " + str(k))
-                    if not report_file.is_supported(k):
-                        continue
+                if not report_file.is_supported(f):
+                    continue
 
-                    LOG.debug("Parsing input file '%s'", k)
+                LOG.debug("Parsing input file '%s'", f)
 
-                    report_file_path = os.path.join(root_dir_path, k)
-                    self.__process_report_file(
-                        report_file_path, session, source_root, run_id,
-                        file_path_to_id, run_history_time,
-                        skip_handler, hash_map_reports)
-                    processed_result_file_count += 1
+                report_file_path = os.path.join(root_dir_path, f)
+                self.__process_report_file(
+                    report_file_path, session, source_root, run_id,
+                    file_path_to_id, run_history_time,
+                    skip_handler, hash_map_reports)
+                processed_result_file_count += 1
 
         LOG.info("[%s] Processed %d analyzer result file(s).", self.__name,
                  processed_result_file_count)
