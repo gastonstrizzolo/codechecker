@@ -743,14 +743,17 @@ class MassStoreRun:
                     i, file_path_to_id[p.file.path], db_report.id))
 
             LOG.debug("Storing bug path events.")
-            # for i, event in enumerate(report.bug_path_events):
-            #     print(i, event)
-
-            #     session.add(BugPathEvent(
-            #         event.range.start_line, event.range.start_col,
-            #         event.range.end_line, event.range.end_col,
-            #         i, event.message, file_path_to_id[event.file.path],
-            #         db_report.id))
+            for i, event in enumerate(report.bug_path_events):
+                print(i, event)
+                session.add(BugPathEvent(
+                    event.range.start_line, 
+                    event.range.start_col,
+                    event.range.end_line, 
+                    event.range.end_col,
+                    i, 
+                    event.message, 
+                    file_path_to_id[event.file.path],
+                    db_report.id))
 
             LOG.debug("Storing notes.")
             for note in report.notes:
@@ -862,6 +865,7 @@ class MassStoreRun:
         analysis_info = self.__analysis_info.get(root_dir_path)
 
         for report in reports:
+            print(report)
             report.trim_path_prefixes(self.__trim_path_prefixes)
 
             missing_ids_for_files = get_missing_file_ids(report)

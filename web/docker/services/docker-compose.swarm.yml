@@ -33,7 +33,8 @@ services:
             - node.labels.codechecker-server == true
     volumes:
       - workspace:/workspace
-      - /home/ariel/Desktop/Sources/gastoncodechecker/web/server/codechecker_server/api:/codechecker/lib/python3/codechecker_server/api
+      - /home/gaston/codechecker/codechecker_forked/web/server/codechecker_server/api:/codechecker/lib/python3/codechecker_server/api
+      - /home/gaston/codechecker/codechecker_forked/tools/report-converter/codechecker_report_converter:/codechecker/lib/python3/codechecker_report_converter
     command: >
       CodeChecker server
         --verbose debug

@@ -80,7 +80,15 @@ class Parser(BaseParser):
                         continue
 
                     bug_path_positions = [BugPathPosition(file, rng)]
+                    for bug in (bug_path_positions):
+                        print("bug_path_position: ",bug.to_json)
+                    
+                    
+                    
+                    
                     bug_path_events = thread_flow_info.bug_path_events or None
+                    print("bug path events: ----------> abajo")
+                    print(bug_path_events)
 
                     report = Report(
                         file,
@@ -119,7 +127,7 @@ class Parser(BaseParser):
         result: Dict,
         rule_id: str,
         rules: Dict[str, Dict]
-    ) -> Tuple[List[BugPathEvent], List[BugPathEvent]]:
+    ) -> Tuple[List[BugPathEvent], List[BugPathEvent], List[BugPathEvent]]:
         """ """
         thread_flow_info = ThreadFlowInfo()
 
@@ -129,16 +137,17 @@ class Parser(BaseParser):
                     location = self._process_location(raw_location, rule_id, rules)
 
                     # TODO: check the importance field.
-                    thread_flow_info.bug_path_events.append(
-                        BugPathEvent(
+                    mybugpathevent = BugPathEvent(
                             location.message,
                             location.file,
                             location.range.start_line,
                             location.range.start_col,
                             location.range
                         )
-                    )
-
+                    #si esto no se imprime entonces no se entra al for de arriba
+                    print("sarif, mybugpathevent:",mybugpathevent)
+                    thread_flow_info.bug_path_events.append(mybugpathevent)
+        print("sarif, thread_flow_info: ",thread_flow_info)
         return thread_flow_info
 
     def _process_location(
@@ -165,8 +174,9 @@ class Parser(BaseParser):
         # Physical loc is required, must always be present.
         if physical_loc:
             file = self._get_file(physical_loc)
-            # print("sarif, _process_physical_location, file: ", file)
+            print("sarif, _process_physical_location, file: ", file)
             rng = self._get_range(physical_loc)
+            print("sarif, _process_physical_location, rng: ", rng)
             return file, rng
 
         return None, None
@@ -204,6 +214,8 @@ class Parser(BaseParser):
         #file_path = os.path.join(uri.netloc, uri.path)
 
 #        file_path = remove_prefix(artifact_loc.get("uri"), "file://", )
+# algunos entran file:// otros entran como path absoluto
+# entre cual entre q salga lo mismo
 
         #print("sarif, get_file, file_path: ", file_path)
         return get_or_create_file(file_path, self._file_cache)

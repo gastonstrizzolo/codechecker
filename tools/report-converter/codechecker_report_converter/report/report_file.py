@@ -42,7 +42,6 @@ def get_parser(
     if analyzer_result_file_path.endswith(f".{plist.EXTENSION}"):
         return plist.Parser(checker_labels, file_cache)
     if analyzer_result_file_path.endswith(f".{sarif.EXTENSION}"):
-        print('UIAHSUHSAUISH')
         return sarif.Parser(checker_labels, file_cache)
 ## es none ese checker labels
 
