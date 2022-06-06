@@ -44,6 +44,7 @@ def get_parser(
     if analyzer_result_file_path.endswith(f".{sarif.EXTENSION}"):
         return sarif.Parser(checker_labels, file_cache)
 
+
 def get_reports(
     analyzer_result_file_path: str,
     checker_labels: Optional[CheckerLabels] = None,

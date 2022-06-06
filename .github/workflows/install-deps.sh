@@ -1,12 +1,11 @@
 #!/bin/bash
 
 wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key|sudo apt-key add -
-sudo add-apt-repository 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-13 main' -y
+sudo add-apt-repository 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal-13 main' -y
 
 sudo apt-get update -q
 
 sudo apt-get install \
-  g++-6 \
   gcc-multilib \
   libc6-dev-i386 \
   libpq-dev \

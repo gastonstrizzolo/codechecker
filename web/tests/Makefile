@@ -32,6 +32,7 @@ PYCODESTYLE_TEST_CMD = pycodestyle \
   codechecker_web tests \
   client/codechecker_client \
   server/codechecker_server server/tests \
+  $(ROOT)/tools/report-converter/codechecker_report_converter \
   tests
 
 pycodestyle:

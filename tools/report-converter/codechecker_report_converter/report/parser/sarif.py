@@ -11,7 +11,6 @@ Parse the sarif output of an analyzer
 
 import json
 import logging
-import os
 from pathlib import Path
 
 from urllib.parse import urlparse
@@ -30,6 +29,7 @@ LOG = logging.getLogger('report-converter')
 
 EXTENSION = 'sarif'
 
+
 class Location(NamedTuple):
     """
     Location of a bug.
@@ -37,6 +37,7 @@ class Location(NamedTuple):
     file: File
     range: Range
     message: Optional[str] = ""
+
 
 class ThreadFlowInfo(NamedTuple):
     bug_path_events: List[BugPathEvent] = []
@@ -120,7 +121,8 @@ class Parser(BaseParser):
         for code_flow in result.get("codeFlows", []):
             for thread_flow in code_flow.get("threadFlows", []):  # §3.36.3
                 for raw_location in thread_flow["locations"]:
-                    location = self._process_location(raw_location, rule_id, rules)
+                    location = self._process_location(
+                        raw_location, rule_id, rules)
 
                     # TODO: check the importance field.
                     mybugpathevent = BugPathEvent(
@@ -207,8 +209,6 @@ class Parser(BaseParser):
         message_strings = rule.get("messageStrings", {})
         return message_strings[msg["id"]]["text"].format(*args)
 
-
-
     def convert(
         self,
         reports: List[Report],
@@ -216,8 +216,8 @@ class Parser(BaseParser):
     ):
         """ Converts the given reports to sarif format. """
 
-        tool_name, tool_version = self._get_tool_info()
-        #tool_name = 'semgrep'
+        # TODO self._get_tool_info()
+        tool_name = 'tool_name'
         tool_version = 'tool_Version'
         rules = {}
         results = []
@@ -231,10 +231,12 @@ class Parser(BaseParser):
                 }
 
             results.append(self._create_result(report))
+        schema = "https://raw.githubusercontent.com/oasis-tcs/sarif-spec \
+        /master/Schemata/sarif-schema-2.1.0.json"
 
         return {
             "vesion": "2.1.0",
-            "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+            "$schema": schema,
             "runs": [{
                 "tool": {
                     "driver": {
@@ -362,9 +364,9 @@ class Parser(BaseParser):
         """
         pass
 
-    ## INFO     -> LOW
-    ## WARNING  -> MEDIUM
-    ## ERROR    -> HIGH
+    # INFO     -> LOW
+    # WARNING  -> MEDIUM
+    # ERROR    -> HIGH
     def get_severity_from_level(self, rule_id: str, rules: Dict[str, Dict]):
         severity = 'UNDEFINED'
         try:

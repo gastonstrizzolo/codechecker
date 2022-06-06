@@ -308,7 +308,13 @@ class Report:
         rang = Range(self.line, self.column, self.line, self.column)
         self.bug_path_events = bug_path_events \
             if bug_path_events is not None else \
-            [BugPathEvent(self.message, self.file, self.line, self.column, rang)]
+            [BugPathEvent(
+                self.message,
+                self.file,
+                self.line,
+                self.column,
+                rang
+            )]
 
         self.bug_path_positions = bug_path_positions \
             if bug_path_positions is not None else []

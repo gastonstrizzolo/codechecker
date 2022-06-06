@@ -745,12 +745,12 @@ class MassStoreRun:
             LOG.debug("Storing bug path events.")
             for i, event in enumerate(report.bug_path_events):
                 session.add(BugPathEvent(
-                    event.range.start_line, 
+                    event.range.start_line,
                     event.range.start_col,
-                    event.range.end_line, 
+                    event.range.end_line,
                     event.range.end_col,
-                    i, 
-                    event.message, 
+                    i,
+                    event.message,
                     file_path_to_id[event.file.path],
                     db_report.id))
 
