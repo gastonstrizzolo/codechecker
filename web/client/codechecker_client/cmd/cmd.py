@@ -539,7 +539,12 @@ def __register_diff(parser):
 
     __add_filtering_arguments(parser, DEFAULT_FILTER_VALUES, True)
 
-    group = parser.add_argument_group("comparison modes")
+    group = parser.add_argument_group(
+        "comparison modes",
+        "List reports that can be found only in baseline or new runs or in "
+        "both. False positive and intentional reports are considered as "
+        "resolved, i.e. these are excluded from the report set as if they "
+        "were not reported.")
     group = group.add_mutually_exclusive_group(required=True)
 
     group.add_argument('--new',
@@ -1084,6 +1089,14 @@ def __register_runs(parser):
                             "you have run_1_a_name, run_2_b_name, "
                             "run_2_c_name, run_3_d_name then \"run_2* "
                             "run_3_d_name\" shows the last three runs.")
+
+    group.add_argument('--details',
+                       default=argparse.SUPPRESS,
+                       action='store_true',
+                       required=False,
+                       help="Adds extra details to the run information in "
+                            "JSON format, such as the list of files that are "
+                            "failed to analyze.")
 
     group.add_argument('--all-before-run',
                        type=str,

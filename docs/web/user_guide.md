@@ -912,6 +912,9 @@ optional arguments:
                         you have run_1_a_name, run_2_b_name, run_2_c_name,
                         run_3_d_name then "run_2* run_3_d_name" shows the last
                         three runs.
+  --details             Adds extra details to the run information in JSON
+                        format, such as the list of files that are failed to
+                        analyze.
   --all-before-run RUN_NAME
                         Get all runs that were stored to the server BEFORE the
                         specified one.
@@ -1277,6 +1280,10 @@ filter arguments:
                         :new,unresolved:false_positive,intentional"
 
 comparison modes:
+  List reports that can be found only in baseline or new runs or in both. False
+  positive and intentional reports are considered as resolved, i.e. these are
+  excluded from the report set as if they were not reported.
+
   --new                 Show results that didn't exist in the 'base' but
                         appear in the 'new' run.
   --resolved            Show results that existed in the 'base' but

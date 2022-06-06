@@ -60,6 +60,7 @@
                     <select-review-status
                       class="mx-0"
                       :value="reviewData"
+                      :report="report"
                       :on-confirm="confirmReviewStatusChange"
                     />
                   </v-col>
@@ -865,7 +866,7 @@ export default {
     },
 
     confirmReviewStatusChange(comment, status, author) {
-      ccService.getClient().changeReviewStatus(this.report.reportId,
+      ccService.getClient().addReviewStatusRule(this.report.bugHash,
         status, comment, handleThriftError(() => {
           this.reviewData.comment = comment;
           this.reviewData.status = status;

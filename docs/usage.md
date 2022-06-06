@@ -22,8 +22,8 @@ in your source code and integrate the static analysis into your CI flow to preve
     - [Automatic fixing](#automatic-fixing)
       - [Using incremental build on modified files](#using-incremental-build)
       - [Using skip file to narrow analyzed files](#narrow-files)
-      - [Analyze explicitly selected source files from the compilation database](#analize-explicit-files)
-  - [Step 5: Cross Translation Unit analization](#step-5)
+      - [Analyze explicitly selected source files from the compilation database](#analyze-explicit-files)
+  - [Step 5: Cross Translation Unit Analysis](#step-5)
   - [Step 6: Store analysis results in a CodeChecker DB and visualize results](#step-6)
     - [Storage of multiple analysis report directories](#storage-of-multiple-analysis-report-directories)
     - [Definition of "run"](#run-definition)
@@ -54,7 +54,7 @@ in your source code and integrate the static analysis into your CI flow to preve
 The purpose of this document is to make the developer's first steps easier in
 usage of CodeChecker. The document is a mini course with simple examples that
 guides the developer how he/she can apply CodeChecker in his/her daily routine
-to make his/her code more roubust.
+to make his/her code more robust.
 
 There is a simple [example](examples) program in this repository what will be
 used in the later sections to show CodeChecker usage.
@@ -132,21 +132,19 @@ process generally uses more time. If you want to speed up analysis specify a
 higher value for the `--jobs` option.
 
 In the above command the `--enable sensitive` means that a subset of checker
-are run. `sensitive` chooses a predefined "group" of checkers. The further
-info on available checkers use
+are run. `sensitive` chooses a predefined "group" of checkers. For further
+info on available checkers use these commands:
 
 ```sh
 # List available checkers.
 CodeChecker checkers --help
 # Show more information about the checkers.
-CodeChecker checkers --details --help
+CodeChecker checkers --details
 # List profiles.
-CodeChecker checkers --profile list --details
+CodeChecker checkers --profile --details
 # List checkers which are in the sensitive profile.
 CodeChecker checkers --profile sensitive --details
 ```
-commands.
-
 The `./reports` directory is the "database" of CodeChecker that allows to
 manage further working steps.
 
@@ -322,7 +320,7 @@ CodeChecker check --ignore skip.list --output ./reports --enable sensitive \
 For more details regarding the skip file format see
 the [user guide](analyzer/user_guide.md#skip).
 
-#### Analyze explicitly selected source files from the compilation database <a name="analize-explicit-files"></a>
+#### Analyze explicitly selected source files from the compilation database <a name="analyze-explicit-files"></a>
 You can select which files you would like to analyze from the compilation
 database. This is similar to the skip list feature but can be easier to quickly
 analyze only a few files not the whole compilation database.
@@ -340,24 +338,24 @@ Absolute directory paths should start with `/`, relative directory paths should
 start with `*` and it can contain path glob pattern. Example:
 `/path/to/main.cpp`, `lib/*.cpp`, `*/test*`.
 
-## Step 5: Cross Translation Unit analization <a name="step-5"></a>
-The previous analization sessions did not follow dependencies between translation units. Make a try with CTU analysis. The `--ctu` option should be
-added to analyze command. Choose an other "report-directory", for example
-`./reports-ctu` to be able to compare output of different analysis configs.
+## Step 5: Cross Translation Unit Analysis <a name="step-5"></a>
+The previous analysis did not consider dependencies between translation units.
+To enable a Cross Translation Unit (CTU) analysis, add the `--ctu` option
+to the `analyze` command. In addition, choose another "report-directory", for
+example `./reports-ctu`, to be able to compare the output of different analyses.
 
 ```sh
 CodeChecker analyze ./compile_commands.json --output ./reports-ctu \
     --enable sensitive --ctu
 ```
 
-In this case the analyzer configuration enabled and we expect that the cross
-translation unit checking found more issues.
+Parse the output of the CTU analysis to check for newly detected issues.
 
 ```sh
 CodeChecker parse --print-steps ./reports-ctu
 ```
 
-The example code have an other bug!
+The example code has another bug!
 
 ```sh
 [HIGH] .../docs/examples/src/divide.c:5:22: Division by zero [core.DivideZero]
@@ -453,7 +451,7 @@ unique hash identifier that is independent of the line number, therefore
 resistant to shifts in the source code. This way, newly introduced bugs can be
 detected, compared to a central CodeChecker report database.
 
-If you stored [first analization of unmodified](#run-the-analysis), example
+If you stored the [first analysis of the unmodified](#run-the-analysis) example
 project and made [automatic fixing](#automatic-fixing) then you can compare the
 result between stored and locally analyzed example project.
 
@@ -476,7 +474,7 @@ CodeChecker fixit --checker-name bugprone-suspicious-string-compare --apply \
 
 4. [Re-analyze your code](#using-incremental-build-on-modified-files). You are
 well advised to use the same `analyze` options as you did in the first
-analization session: the same checkers enabled, the same analyzer options, etc.
+analysis session: the same checkers enabled, the same analyzer options, etc.
 ```sh
 CodeChecker analyze ./compile_commands.json --output ./reports \
     --enable sensitive
@@ -502,7 +500,7 @@ CodeChecker cmd diff --basename ./reports --newname ./reports-ctu --new
 ## Step 7: Fine tune Analysis configuration <a name="step-7"></a>
 ### Analysis Failures <a name="analysis-failures"></a>
 The `reports/failed` folder contains all build-actions that were failed to
-analyze. For these the clang tidy generates reports, clang static analizer
+analyze. For these the clang tidy generates reports, clang static analyzer
 will not.
 
 Generally speaking, if a project can be compiled with Clang then the analysis
@@ -599,7 +597,7 @@ the failed analysis output is collected into `./reports/failed` directory.
 This means that analysis of these files failed and there is no Clang Static
 Analyzer output for these compilation commands.
 
-There is .zip file for each failed anlysis
+There is .zip file for each failed analysis
 ```
 <source_file_name>_<analyzer>_<unique_compile_command_id>.plist_compile_error.zip
 ```
@@ -619,7 +617,7 @@ The `zip` file has the following internal structure
 
 The analysis may have failed due to the following reasons:
 * C/C++ standard non-compliance. Clang requires more strict compliance to the C/C++ standard than gcc. Please review your source code for any indicated non-compliances. Check the stderr and stdout files to find more information about the details of the error.
-* CodeChecker compiler argument transformation error. If the original compilation command can be executed successfully (see the `analyzer-command` file), but the analysis failes for example with header inclusion errors, there is a chance that CodeChecker incorrectly transformed the original gcc/clang compiler invocation to analyzer invocation. Please report a bug to the CodeChecker developers and attach the `failed.zip` for easy reproduction.
+* CodeChecker compiler argument transformation error. If the original compilation command can be executed successfully (see the `analyzer-command` file), but the analysis fails for example with header inclusion errors, there is a chance that CodeChecker incorrectly transformed the original gcc/clang compiler invocation to analyzer invocation. Please report a bug to the CodeChecker developers and attach the `failed.zip` for easy reproduction.
 * The analyzer crashed. This is an analyzer fault and a bug should be reported to the analyzer developers and attach the `failed.zip` for easy reproduction.
 
 ## Step 8: Integrate CodeChecker into your CI loop <a name="step-8"></a>
@@ -780,7 +778,7 @@ in a Jenkins or any other CI engine to report new bugs.
 
 ### Use CodeChecker in the CI without a server <a name="local-workflow"></a>
 If you want to use CodeChecker in your project but you don't want to run a
-CodeChecker server, you can use the followign workflow.
+CodeChecker server, you can use the following workflow.
 
 This workflow makes it possible to block pull requests which would introduce new faults
 and to leave the handling of legacy issues to a later time.
@@ -808,7 +806,7 @@ CodeChecker analysis to *gerrit merge request* and mark the new findings in the
 gerrit review.
 
 You can implement that by creating a jenkins job that monitors the gerrit merge
-requests, runs the anaysis on the changed files and then uploads the new
+requests, runs the analysis on the changed files and then uploads the new
 findings to gerrit through its
 
 [web-api](https://gerrit-review.googlesource.com/Documentation/rest-api.html).
@@ -956,13 +954,13 @@ In uniqueing mode in the Web UI, only 2 distinct reports would be shown:
 ## Report Uniqueing <a name="report-uniqueing"></a>
 There is an additional uniqueing functionality in the
 Web UI that helps the grouping findings that have the same
-*Report Identifier* within or accross muliple runs.
+*Report Identifier* within or across muliple runs.
 You can enable this functionality by ticking in the "Unique reports" tick box
 in the Bug Overview tab.
 
 This feature is useful when:
 
-* you want to list unique findings accross multiple
+* you want to list unique findings across multiple
 runs. In this mode the same report stored in different runs is shown only once.
 * you want count reports as one which end up in the same same bug location, but
 reached through different paths. For example the same null pointer deference 

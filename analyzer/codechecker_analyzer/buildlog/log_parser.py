@@ -1184,7 +1184,7 @@ class CompileCommandEncoder(json.JSONEncoder):
 class CompileActionUniqueingType(Enum):
     NONE = 0  # Full Action text
     SOURCE_ALPHA = 1  # Based on source file, uniqueing by
-    # on alphanumerically first target
+    # alphabetically first output object file name
     SOURCE_REGEX = 2  # Based on source file, uniqueing by regex filter
     STRICT = 3  # Gives error in case of duplicate
 
@@ -1297,8 +1297,8 @@ def parse_unique_log(compilation_database,
             if action.action_type != BuildAction.COMPILE:
                 continue
             if build_action_uniqueing == CompileActionUniqueingType.NONE:
-                if action.__hash__ not in uniqued_build_actions:
-                    uniqued_build_actions[action.__hash__] = action
+                if action not in uniqued_build_actions:
+                    uniqued_build_actions[action] = action
             elif build_action_uniqueing == CompileActionUniqueingType.STRICT:
                 if action.source not in uniqued_build_actions:
                     uniqued_build_actions[action.source] = action

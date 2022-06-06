@@ -32,9 +32,10 @@ from codechecker_api.codeCheckerDBAccess_v6 import constants, ttypes
 from codechecker_api.codeCheckerDBAccess_v6.ttypes import AnalysisInfoFilter, \
     BlameData, BlameInfo, BugPathPos, CheckerCount, Commit, CommitAuthor, \
     CommentData, DiffType, Encoding, RunHistoryData, Order, ReportData, \
-    ReportDetails, ReviewData, RunData, RunFilter, RunReportCount, \
-    RunSortType, RunTagCount, SourceComponentData, SourceFileData, SortMode, \
-    SortType, ExportData
+    ReportDetails, ReviewData, ReviewStatusRule, ReviewStatusRuleFilter, \
+    ReviewStatusRuleSortMode, ReviewStatusRuleSortType, RunData, RunFilter, \
+    RunReportCount, RunSortType, RunTagCount, SourceComponentData, \
+    SourceFileData, SortMode, SortType, ExportData
 
 from codechecker_common import util
 from codechecker_common.logger import get_logger
@@ -203,6 +204,9 @@ def process_report_filter(session, run_ids, report_filter, cmp_data=None):
     if report_filter is None:
         return and_(*AND), join_tables
 
+    if report_filter.reportHash == []:
+        return and_(False), []
+
     if report_filter.filepath:
         OR = [File.filepath.ilike(conv(fp))
               for fp in report_filter.filepath]
@@ -271,16 +275,9 @@ def process_report_filter(session, run_ids, report_filter, cmp_data=None):
         AND.append(Report.detection_status.in_(dst))
 
     if report_filter.reviewStatus:
-        OR = [ReviewStatus.status.in_(
+        OR = [Report.review_status.in_(
             list(map(review_status_str, report_filter.reviewStatus)))]
-
-        # No database entry for unreviewed reports
-        if (ttypes.ReviewStatus.UNREVIEWED in
-                report_filter.reviewStatus):
-            OR.append(ReviewStatus.status.is_(None))
-
         AND.append(or_(*OR))
-        join_tables.append(ReviewStatus)
 
     if report_filter.firstDetectionDate is not None:
         date = datetime.fromtimestamp(report_filter.firstDetectionDate)
@@ -797,14 +794,19 @@ def get_comment_msg(comment):
     return html.escape(message)
 
 
-def create_review_data(review_status):
-    if review_status:
-        return ReviewData(status=review_status_enum(review_status.status),
-                          comment=review_status.message.decode('utf-8'),
-                          author=review_status.author,
-                          date=str(review_status.date))
-    else:
-        return ReviewData(status=ttypes.ReviewStatus.UNREVIEWED)
+def create_review_data(
+    review_status: str,
+    message: Optional[str],
+    author,
+    date,
+    is_in_source: bool
+):
+    return ReviewData(
+        status=review_status_enum(review_status),
+        comment=None if message is None else message.decode('utf-8'),
+        author=author,
+        date=None if date is None else str(date),
+        isInSource=is_in_source)
 
 
 def create_count_expression(report_filter):
@@ -816,13 +818,11 @@ def create_count_expression(report_filter):
 
 def apply_report_filter(q, filter_expression, join_tables):
     """
-    Applies the given filter expression and joins the File and ReviewStatus
-    tables.
+    Applies the given filter expression and joins the File, Run and RunHistory
+    tables if necessary based on join_tables parameter.
     """
     if File in join_tables:
         q = q.outerjoin(File, Report.file_id == File.id)
-    if ReviewStatus in join_tables:
-        q = q.outerjoin(ReviewStatus, ReviewStatus.bug_hash == Report.bug_id)
     if Run in join_tables:
         q = q.outerjoin(Run, Run.id == Report.run_id)
     if RunHistory in join_tables:
@@ -839,7 +839,7 @@ def get_sort_map(sort_types, is_unique=False):
         SortType.BUG_PATH_LENGTH: [(Report.path_length, 'bug_path_length')],
         SortType.CHECKER_NAME: [(Report.checker_id, 'checker_id')],
         SortType.SEVERITY: [(Report.severity, 'severity')],
-        SortType.REVIEW_STATUS: [(ReviewStatus.status, 'rw_status')],
+        SortType.REVIEW_STATUS: [(Report.review_status, 'rw_status')],
         SortType.DETECTION_STATUS: [(Report.detection_status, 'dt_status')]}
 
     if is_unique:
@@ -881,10 +881,7 @@ def filter_unresolved_reports(q):
     skip_detection_statuses = ['resolved', 'off', 'unavailable']
 
     return q.filter(Report.detection_status.notin_(skip_detection_statuses)) \
-            .filter(or_(ReviewStatus.status.is_(None),
-                        ReviewStatus.status.notin_(skip_review_statuses))) \
-            .outerjoin(ReviewStatus,
-                       ReviewStatus.bug_hash == Report.bug_id)
+            .filter(Report.review_status.notin_(skip_review_statuses))
 
 
 def check_remove_runs_lock(session, run_ids):
@@ -1046,6 +1043,84 @@ def get_cleanup_plan_report_hashes(
         cleanup_plan_hashes[cleanup_plan_id].append(report_hash)
 
     return cleanup_plan_hashes
+
+
+def sort_review_statuses_query(
+    query,
+    sort_mode: ReviewStatusRuleSortMode,
+    report_count_label
+):
+    """
+    Sort review status rule query by the given sort mode.
+    """
+    # Sort by rule date by default.
+    if not sort_mode:
+        return query.order_by(desc(ReviewStatus.date))
+
+    order_type_map = {Order.ASC: asc, Order.DESC: desc}
+    order_type = order_type_map.get(sort_mode.ord)
+    if sort_mode.type == ReviewStatusRuleSortType.REPORT_HASH:
+        query = query.order_by(order_type(ReviewStatus.bug_hash))
+    elif sort_mode.type == ReviewStatusRuleSortType.STATUS:
+        query = query.order_by(order_type(ReviewStatus.status))
+    elif sort_mode.type == ReviewStatusRuleSortType.AUTHOR:
+        query = query.order_by(order_type(ReviewStatus.author))
+    elif sort_mode.type == ReviewStatusRuleSortType.DATE:
+        query = query.order_by(order_type(ReviewStatus.date))
+    elif sort_mode.type == ReviewStatusRuleSortType.ASSOCIATED_REPORTS_COUNT:
+        query = query.order_by(order_type(report_count_label))
+
+    return query
+
+
+def process_rs_rule_filter(
+    query,
+    rule_filter: Optional[ReviewStatusRuleFilter] = None
+):
+    """ Process review status rule filter. """
+    if rule_filter:
+        if rule_filter.reportHashes is not None:
+            OR = [ReviewStatus.bug_hash.ilike(conv(report_hash))
+                  for report_hash in rule_filter.reportHashes]
+            query = query.filter(or_(*OR))
+
+        if rule_filter.reviewStatuses is not None:
+            query = query.filter(
+                ReviewStatus.status.in_(
+                    map(review_status_str, rule_filter.reviewStatuses)))
+
+        if rule_filter.authors is not None:
+            OR = [ReviewStatus.author.ilike(conv(author))
+                  for author in rule_filter.authors]
+            query = query.filter(or_(*OR))
+
+    return query
+
+
+def get_rs_rule_query(
+    session: DBSession,
+    rule_filter: Optional[ReviewStatusRuleFilter] = None,
+    sort_mode: Optional[ReviewStatusRuleSortMode] = None
+):
+    """ Returns query to get review status rules. """
+    report_count = func.count(Report.id).label('report_count')
+    q = session \
+        .query(ReviewStatus, report_count) \
+        .join(Report,
+              Report.bug_id == ReviewStatus.bug_hash,
+              isouter=True)
+    q = process_rs_rule_filter(q, rule_filter)
+
+    if sort_mode:
+        q = sort_review_statuses_query(q, sort_mode, report_count)
+
+    q = q.group_by(ReviewStatus.bug_hash)
+
+    # Filter review status rules by aggregate columns.
+    if rule_filter and rule_filter.noAssociatedReports:
+        q = q.having(report_count == 0)
+
+    return q
 
 
 class ThriftRequestHandler:
@@ -1392,13 +1467,10 @@ class ThriftRequestHandler:
 
         with DBSession(self._Session) as session:
 
-            result = session.query(Report,
-                                   File,
-                                   ReviewStatus) \
+            result = session \
+                .query(Report, File) \
                 .filter(Report.id == reportId) \
                 .outerjoin(File, Report.file_id == File.id) \
-                .outerjoin(ReviewStatus,
-                           ReviewStatus.bug_hash == Report.bug_id) \
                 .limit(1).one_or_none()
 
             if not result:
@@ -1406,7 +1478,7 @@ class ThriftRequestHandler:
                     codechecker_api_shared.ttypes.ErrorCode.DATABASE,
                     "Report " + str(reportId) + " not found!")
 
-            report, source_file, review_status = result
+            report, source_file = result
             return ReportData(
                 runId=report.run_id,
                 bugHash=report.bug_id,
@@ -1418,7 +1490,12 @@ class ThriftRequestHandler:
                 column=report.column,
                 checkerId=report.checker_id,
                 severity=report.severity,
-                reviewData=create_review_data(review_status),
+                reviewData=create_review_data(
+                    report.review_status,
+                    report.review_status_message,
+                    report.review_status_author,
+                    report.review_status_date,
+                    report.review_status_is_in_source),
                 detectionStatus=detection_status_enum(report.detection_status),
                 detectedAt=str(report.detected_at),
                 fixedAt=str(report.fixed_at) if report.fixed_at else None)
@@ -1449,7 +1526,9 @@ class ThriftRequestHandler:
 
                 base_hashes = session.query(Report.bug_id.label('bug_id')) \
                     .outerjoin(File, Report.file_id == File.id) \
-                    .filter(Report.detection_status.notin_(skip_statuses_str))
+                    .filter(
+                        Report.detection_status.notin_(skip_statuses_str),
+                        Report.fixed_at.is_(None))
 
                 base_hashes = \
                     filter_open_reports_in_tags(base_hashes, run_ids, tag_ids)
@@ -1478,7 +1557,8 @@ class ThriftRequestHandler:
                     return new_hashes
             elif diff_type == DiffType.RESOLVED:
                 results = session.query(Report.bug_id) \
-                    .filter(Report.bug_id.notin_(report_hashes))
+                    .filter(or_(Report.bug_id.notin_(report_hashes),
+                                Report.fixed_at.isnot(None)))
 
                 results = \
                     filter_open_reports_in_tags(results, run_ids, tag_ids)
@@ -1488,7 +1568,9 @@ class ThriftRequestHandler:
             elif diff_type == DiffType.UNRESOLVED:
                 results = session.query(Report.bug_id) \
                     .filter(Report.bug_id.in_(report_hashes)) \
-                    .filter(Report.detection_status.notin_(skip_statuses_str))
+                    .filter(Report.detection_status.notin_(
+                        skip_statuses_str)) \
+                    .filter(Report.fixed_at.is_(None))
 
                 results = \
                     filter_open_reports_in_tags(results, run_ids, tag_ids)
@@ -1549,12 +1631,14 @@ class ThriftRequestHandler:
                 q = session.query(Report.id, Report.bug_id,
                                   Report.checker_message, Report.checker_id,
                                   Report.severity, Report.detected_at,
-                                  Report.fixed_at, ReviewStatus,
+                                  Report.fixed_at, Report.review_status,
+                                  Report.review_status_author,
+                                  Report.review_status_message,
+                                  Report.review_status_date,
+                                  Report.review_status_is_in_source,
                                   File.filename, File.filepath,
                                   Report.path_length, Report.analyzer_name) \
                     .outerjoin(File, Report.file_id == File.id) \
-                    .outerjoin(ReviewStatus,
-                               ReviewStatus.bug_hash == Report.bug_id) \
                     .outerjoin(sorted_reports,
                                sorted_reports.c.id == Report.id) \
                     .filter(sorted_reports.c.id.isnot(None))
@@ -1575,9 +1659,18 @@ class ThriftRequestHandler:
                     report_details = get_report_details(session, report_ids)
 
                 for report_id, bug_id, checker_msg, checker, severity, \
-                    detected_at, fixed_at, status, filename, _, \
-                        bug_path_len, analyzer_name in query_result:
-                    review_data = create_review_data(status)
+                    detected_at, fixed_at, review_status, \
+                    review_status_author, review_status_message, \
+                    review_status_date, review_status_is_in_source, \
+                    filename, _, bug_path_len, \
+                        analyzer_name in query_result:
+
+                    review_data = create_review_data(
+                        review_status,
+                        review_status_message,
+                        review_status_author,
+                        review_status_date,
+                        review_status_is_in_source)
 
                     results.append(
                         ReportData(bugHash=bug_id,
@@ -1603,10 +1696,13 @@ class ThriftRequestHandler:
                                   Report.detection_status, Report.bug_id,
                                   Report.checker_message, Report.checker_id,
                                   Report.severity, Report.detected_at,
-                                  Report.fixed_at, ReviewStatus,
+                                  Report.fixed_at, Report.review_status,
+                                  Report.review_status_author,
+                                  Report.review_status_message,
+                                  Report.review_status_date,
+                                  Report.review_status_is_in_source,
                                   Report.path_length, Report.analyzer_name)
-                q = apply_report_filter(
-                    q, filter_expression, join_tables + [ReviewStatus])
+                q = apply_report_filter(q, filter_expression, join_tables)
 
                 q = sort_results_query(q, sort_types, sort_type_map,
                                        order_type_map)
@@ -1638,10 +1734,18 @@ class ThriftRequestHandler:
 
                 for run_id, report_id, file_id, line, column, d_status, \
                     bug_id, checker_msg, checker, severity, detected_at,\
-                    fixed_at, r_status, bug_path_len, analyzer_name \
-                        in query_result:
+                    fixed_at, review_status, review_status_author, \
+                    review_status_message, review_status_date, \
+                    review_status_is_in_source, bug_path_len, \
+                        analyzer_name in query_result:
 
-                    review_data = create_review_data(r_status)
+                    review_data = create_review_data(
+                        review_status,
+                        review_status_message,
+                        review_status_author,
+                        review_status_date,
+                        review_status_is_in_source)
+
                     results.append(
                         ReportData(runId=run_id,
                                    bugHash=bug_id,
@@ -1723,22 +1827,6 @@ class ThriftRequestHandler:
 
             return report_count
 
-    @staticmethod
-    @timeit
-    def __construct_bug_item_list(session, report_id, item_type):
-
-        q = session.query(item_type) \
-            .filter(item_type.report_id == report_id) \
-            .order_by(item_type.order)
-
-        bug_items = []
-
-        for event in q:
-            f = session.query(File).get(event.file_id)
-            bug_items.append((event, f.filepath))
-
-        return bug_items
-
     @exc_to_thrift_reqfail
     @timeit
     def getReportDetails(self, reportId):
@@ -1780,7 +1868,7 @@ class ThriftRequestHandler:
         # the first user who stored the reports. If another user stores the
         # same project with same report status then we don't change it.
         if (old_status, old_msg) == (new_status, new_message):
-            return True
+            return None
 
         review_status.status = new_status
         review_status.author = new_user
@@ -1807,9 +1895,52 @@ class ThriftRequestHandler:
                                             review_status.date)
         session.add(system_comment)
 
+        # False positive and intentional reports are considered closed, so
+        # their "fix date" is set. The reports are reopened when they become
+        # unreviewed or confirmed again. Don't change "fix date" for closed
+        # report which remain closed.
+        if review_status.status in ["false_positive", "intentional"]:
+            session \
+                .query(Report) \
+                .filter(Report.bug_id == report_hash) \
+                .filter(Report.detection_status.in_([
+                    "unresolved", "new", "reopened"])) \
+                .filter(Report.review_status.notin_(
+                    ["false_positive", "intentional"])) \
+                .filter(Report.review_status_is_in_source.is_(False)) \
+                .update(
+                    {"fixed_at": review_status.date},
+                    synchronize_session=False)
+        else:
+            reports = session \
+                .query(Report) \
+                .filter(
+                    Report.bug_id == report_hash,
+                    Report.detection_status.in_([
+                        "unresolved", "new", "reopened"]),
+                    Report.review_status.in_([
+                        "false_positive", "intentional"]))
+
+            session \
+                .query(Report) \
+                .filter(Report.id.in_(
+                    map(lambda report: report.id, reports))) \
+                .filter(Report.review_status_is_in_source.is_(False)) \
+                .update({"fixed_at": None}, synchronize_session=False)
+
+        session \
+            .query(Report) \
+            .filter(Report.review_status_is_in_source.is_(False)) \
+            .filter(Report.bug_id == report_hash) \
+            .update({
+                'review_status': review_status.status,
+                'review_status_author': review_status.author,
+                'review_status_message': review_status.message,
+                'review_status_date': review_status.date})
+
         session.flush()
 
-        return True
+        return None
 
     @exc_to_thrift_reqfail
     @timeit
@@ -1838,7 +1969,7 @@ class ThriftRequestHandler:
         with DBSession(self._Session) as session:
             report = session.query(Report).get(report_id)
             if report:
-                res = self._setReviewStatus(
+                self._setReviewStatus(
                     session, report.bug_id, status, message)
             else:
                 raise codechecker_api_shared.ttypes.RequestFailed(
@@ -1850,7 +1981,89 @@ class ThriftRequestHandler:
                      report_id, review_status_str(status),
                      self._get_username())
 
-        return res
+        return True
+
+    @exc_to_thrift_reqfail
+    @timeit
+    def getReviewStatusRules(self, rule_filter, sort_mode, limit, offset):
+        self.__require_view()
+
+        result = []
+        with DBSession(self._Session) as session:
+            if not sort_mode:
+                sort_mode = ReviewStatusRuleSortMode(
+                    type=ReviewStatusRuleSortType.DATE,
+                    ord=Order.DESC)
+
+            q = get_rs_rule_query(session, rule_filter, sort_mode)
+
+            if limit:
+                q = q.limit(limit).offset(offset)
+
+        for review_status, associated_report_count in q:
+            result.append(ReviewStatusRule(
+                reportHash=review_status.bug_hash,
+                reviewData=create_review_data(
+                    review_status.status,
+                    review_status.message,
+                    review_status.author,
+                    review_status.date,
+                    False),
+                associatedReportCount=associated_report_count))
+
+        return result
+
+    @exc_to_thrift_reqfail
+    @timeit
+    def getReviewStatusRulesCount(self, rule_filter):
+        self.__require_view()
+
+        with DBSession(self._Session) as session:
+            q = get_rs_rule_query(session, rule_filter)
+            return q.count()
+
+    @exc_to_thrift_reqfail
+    @timeit
+    def removeReviewStatusRules(self, rule_filter):
+        self.__require_admin()
+
+        with DBSession(self._Session) as session:
+            q = get_rs_rule_query(session, rule_filter)
+            for review_status, _ in q:
+                session.delete(review_status)
+
+                # Reports become unreviewed when the corresponding review
+                # status rule is removed and the report doesn't have a review
+                # status as source code comment.
+                session \
+                    .query(Report) \
+                    .filter(Report.bug_id == review_status.bug_hash) \
+                    .filter(Report.review_status_is_in_source.is_(False)) \
+                    .update({
+                        'review_status': 'unreviewed',
+                        'review_status_author': None,
+                        'review_status_message': None,
+                        'review_status_date': None,
+                        'fixed_at': None})
+
+            session.commit()
+
+            LOG.info("Review status rules were removed based on filter '%s' by"
+                     "'%s'.", rule_filter, self._get_username())
+
+            return True
+
+    @exc_to_thrift_reqfail
+    @timeit
+    def addReviewStatusRule(self, report_hash, review_status, message):
+        self.__require_permission([permissions.PRODUCT_ACCESS,
+                                   permissions.PRODUCT_STORE])
+
+        with DBSession(self._Session) as session:
+            self._setReviewStatus(
+                session, report_hash, review_status, message)
+            session.commit()
+            return True
 
     @exc_to_thrift_reqfail
     @timeit
@@ -2359,34 +2572,30 @@ class ThriftRequestHandler:
 
             is_unique = report_filter is not None and report_filter.isUnique
             if is_unique:
-                q = session.query(Report.bug_id,
-                                  func.max(ReviewStatus.status).label(
-                                      'status'))
+                q = session.query(
+                    Report.bug_id,
+                    Report.review_status)
             else:
-                q = session.query(func.max(Report.bug_id),
-                                  ReviewStatus.status,
-                                  func.count(Report.id))
+                q = session.query(
+                    func.max(Report.bug_id),
+                    Report.review_status,
+                    func.count(Report.id))
 
-            join_tables.append(ReviewStatus)
             q = apply_report_filter(q, filter_expression, join_tables)
 
             if is_unique:
-                q = q.group_by(Report.bug_id).subquery()
-                review_statuses = session.query(func.max(q.c.bug_id),
-                                                q.c.status,
+                q = q.group_by(Report.bug_id, Report.review_status).subquery()
+                review_statuses = session.query(q.c.bug_id,
+                                                q.c.review_status,
                                                 func.count(q.c.bug_id)) \
-                    .group_by(q.c.status)
+                    .group_by(q.c.review_status)
             else:
-                review_statuses = q.group_by(ReviewStatus.status)
+                review_statuses = q.group_by(Report.review_status)
 
             for _, rev_status, count in review_statuses:
-                if rev_status is None:
-                    # If no review status is set count it as unreviewed.
-                    rev_status = ttypes.ReviewStatus.UNREVIEWED
-                    results[rev_status] += count
-                else:
-                    rev_status = review_status_enum(rev_status)
-                    results[rev_status] += count
+                rev_status = review_status_enum(rev_status)
+                results[rev_status] += count
+
         return results
 
     @exc_to_thrift_reqfail
@@ -2964,7 +3173,7 @@ class ThriftRequestHandler:
 
             for stat, run_id in query:
                 failed_files = zlib.decompress(stat.failed_files).decode(
-                    'utf-8').split('\n') if stat.failed_files else None
+                    'utf-8').split('\n') if stat.failed_files else []
                 analyzer_version = zlib.decompress(
                     stat.version).decode('utf-8') if stat.version else None
 
@@ -3004,18 +3213,23 @@ class ThriftRequestHandler:
 
             # Logic for getting review status
             review_data_list = {}
-            review_query = session.query(ReviewStatus, Report.bug_id) \
-                .outerjoin(Report, Report.bug_id == ReviewStatus.bug_hash) \
-                .order_by(ReviewStatus.date.desc())
+            review_query = session.query(Report) \
+                .filter(Report.review_status != "unreviewed") \
+                .order_by(Report.review_status_date)
 
             if run_filter:
                 review_query = process_run_filter(session, review_query,
                                                   run_filter) \
                     .outerjoin(Run, Report.run_id == Run.id)
 
-            for data, report_id in review_query:
-                review_data = create_review_data(data)
-                review_data_list[report_id] = review_data
+            for report in review_query:
+                review_data = create_review_data(
+                    report.review_status,
+                    report.review_status_message,
+                    report.review_status_author,
+                    report.review_status_date,
+                    report.review_status_is_in_source)
+                review_data_list[report.bug_id] = review_data
 
         return ExportData(comments=comment_data_list,
                           reviewData=review_data_list)
