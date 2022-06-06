@@ -201,7 +201,6 @@ def get_report_dir_results(
         for file_path in file_paths:
             # Get reports.
             reports = report_file.get_reports(file_path, checker_labels)
-            LOG.info("cmd_line_client, get_report_dir_results, reports: ", reports)
             # Skip duplicated reports.
             reports = reports_helper.skip(reports, processed_path_hashes)
 
@@ -836,7 +835,6 @@ def handle_diff_results(args):
         get only necessarry line contents.
         """
         reports = []
-        LOG.info("reports_data en convert_report_data_to_report",reports_data)
 
         if not reports_data:
             return reports
@@ -859,7 +857,6 @@ def handle_diff_results(args):
                 report.source_line = f"{source_line}{os.linesep}"
 
             reports.append(report)
-        LOG.info("cmd_line_client, convert_report_data_to_report, reports:", reports)
         return reports
 
     def get_diff_local_dir_remote_run(

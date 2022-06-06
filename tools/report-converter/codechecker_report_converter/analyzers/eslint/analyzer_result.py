@@ -19,8 +19,6 @@ from codechecker_report_converter.report.parser import sarif
 
 from ..analyzer_result import AnalyzerResultBase
 
-#from .sarif import Sarif
-
 LOG = logging.getLogger('report-converter')
 
 

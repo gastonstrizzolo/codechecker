@@ -65,30 +65,16 @@ class Parser(BaseParser):
 
                 message = self._process_message(
                     result["message"], rule_id, rules)  # §3.11
-
                 severity = self.get_severity_from_level(rule_id, rules)
-
                 analyzer_name = run["tool"]["driver"]["name"]
-
                 for location in result.get("locations", []):
                     thread_flow_info = self._process_code_flows(
                         result, rule_id, rules)
-
-                    #print("sarif, get_reports, location: ", location)
                     file, rng = self._process_physical_location(location)
                     if not (file and rng):
                         continue
-
                     bug_path_positions = [BugPathPosition(file, rng)]
-                    for bug in (bug_path_positions):
-                        print("bug_path_position: ",bug.to_json)
-                    
-                    
-                    
-                    
                     bug_path_events = thread_flow_info.bug_path_events or None
-                    print("bug path events: ----------> abajo")
-                    print(bug_path_events)
 
                     report = Report(
                         file,
@@ -115,8 +101,8 @@ class Parser(BaseParser):
     def _get_rules(self, data: Dict) -> Dict[str, Dict]:
         """ """
         rules: Dict[str, Dict] = {}
-
-        driver = data["tool"]["driver"]
+        tool = data["tool"]
+        driver = tool["driver"]
         for rule in driver.get("rules", []):
             rules[rule["id"]] = rule
 
@@ -144,10 +130,7 @@ class Parser(BaseParser):
                             location.range.start_col,
                             location.range
                         )
-                    #si esto no se imprime entonces no se entra al for de arriba
-                    print("sarif, mybugpathevent:",mybugpathevent)
                     thread_flow_info.bug_path_events.append(mybugpathevent)
-        print("sarif, thread_flow_info: ",thread_flow_info)
         return thread_flow_info
 
     def _process_location(
@@ -174,9 +157,7 @@ class Parser(BaseParser):
         # Physical loc is required, must always be present.
         if physical_loc:
             file = self._get_file(physical_loc)
-            print("sarif, _process_physical_location, file: ", file)
             rng = self._get_range(physical_loc)
-            print("sarif, _process_physical_location, rng: ", rng)
             return file, rng
 
         return None, None
@@ -199,25 +180,15 @@ class Parser(BaseParser):
         physical_loc: Dict
     ) -> Optional[File]:
         """ Get file path. """
-        # print("sarif, get_file, physical_loc: ", physical_loc)
         artifact_loc = physical_loc.get("artifactLocation")
         if not artifact_loc:
             return None
-
-        # print("sarif, get_file, artifact_loc: ", artifact_loc)
-
-
         file_path = artifact_loc.get("uri")
-        #if uri is None:
-        #    return None
-#
-        #file_path = os.path.join(uri.netloc, uri.path)
-
-#        file_path = remove_prefix(artifact_loc.get("uri"), "file://", )
-# algunos entran file:// otros entran como path absoluto
-# entre cual entre q salga lo mismo
-
-        #print("sarif, get_file, file_path: ", file_path)
+        if file_path.startswith("file://"):
+            uri = urlparse(artifact_loc.get("uri"))
+            if uri is None:
+                return None
+            file_path = Path(uri.netloc, uri.path).as_posix()
         return get_or_create_file(file_path, self._file_cache)
 
     def _process_message(
@@ -245,8 +216,8 @@ class Parser(BaseParser):
     ):
         """ Converts the given reports to sarif format. """
 
-        #tool_name, tool_version = self._get_tool_info()
-        tool_name = 'semgrep'
+        tool_name, tool_version = self._get_tool_info()
+        #tool_name = 'semgrep'
         tool_version = 'tool_Version'
         rules = {}
         results = []
@@ -287,8 +258,6 @@ class Parser(BaseParser):
                 "physicalLocation": {
                     "artifactLocation": {
                         "uri": report.file.original_path
-#                         "uri": report.file.original_path
-#                         "uri": f"file://{report.file.original_path}"
                     },
                     "region": {
                         "startLine": report.line,
@@ -365,7 +334,6 @@ class Parser(BaseParser):
                 "physicalLocation": {
                     "artifactLocation": {
                         "uri": pos.file.original_path
-                        #"uri": f"file://{pos.file.original_path}"
                     },
                     "region": region
                 }
@@ -409,7 +377,7 @@ class Parser(BaseParser):
             if level == 'error':
                 severity = 'HIGH'
         except KeyError:
-            pass
+            return severity
         except IndexError:
-            pass
+            return severity
         return severity

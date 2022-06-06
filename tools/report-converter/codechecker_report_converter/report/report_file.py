@@ -43,7 +43,6 @@ def get_parser(
         return plist.Parser(checker_labels, file_cache)
     if analyzer_result_file_path.endswith(f".{sarif.EXTENSION}"):
         return sarif.Parser(checker_labels, file_cache)
-## es none ese checker labels
 
 def get_reports(
     analyzer_result_file_path: str,
@@ -53,14 +52,10 @@ def get_reports(
 ) -> List[Report]:
     """ Get reports from the given report file. """
     parser = get_parser(analyzer_result_file_path, checker_labels, file_cache)
-    #print("report_file, parser: ",parser)
     if parser.EXTENSION == 'plist':
         return parser.get_reports(analyzer_result_file_path, source_dir_path)
     if parser.EXTENSION == 'sarif':
-        reports_sarif = parser.get_reports(analyzer_result_file_path)
-        #print("reports sarif en report_file :", reports_sarif)
-        return reports_sarif
-
+        return parser.get_reports(analyzer_result_file_path)
     return []
 
 

@@ -744,7 +744,6 @@ class MassStoreRun:
 
             LOG.debug("Storing bug path events.")
             for i, event in enumerate(report.bug_path_events):
-                print(i, event)
                 session.add(BugPathEvent(
                     event.range.start_line, 
                     event.range.start_col,
@@ -865,7 +864,6 @@ class MassStoreRun:
         analysis_info = self.__analysis_info.get(root_dir_path)
 
         for report in reports:
-            print(report)
             report.trim_path_prefixes(self.__trim_path_prefixes)
 
             missing_ids_for_files = get_missing_file_ids(report)

@@ -99,7 +99,6 @@ def login_user(protocol, host, port, username, login=False):
         return
 
     methods = auth_client.getAcceptedAuthMethods()
-    LOG.debug("client, methods:", methods)
     # Attempt username-password auth first.
     if 'Username:Password' in str(methods):
 
