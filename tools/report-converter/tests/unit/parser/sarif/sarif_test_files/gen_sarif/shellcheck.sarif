@@ -1,0 +1,111 @@
+{
+  "runs": [
+    {
+      "results": [
+        {
+          "fixes": [],
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "shellcheck_1066.sh"
+                },
+                "region": {
+                  "endColumn": 6,
+                  "endLine": 2,
+                  "startColumn": 1,
+                  "startLine": 2
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "var1 appears unused. Verify use (or export if used externally)."
+          },
+          "relatedLocations": [],
+          "ruleId": "2034",
+          "ruleIndex": 0
+        },
+        {
+          "fixes": [],
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "shellcheck_1066.sh"
+                },
+                "region": {
+                  "endColumn": 2,
+                  "endLine": 2,
+                  "startColumn": 2,
+                  "startLine": 2
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Don't use $ on the left side of assignments."
+          },
+          "relatedLocations": [],
+          "ruleId": "1066",
+          "ruleIndex": 1
+        },
+        {
+          "fixes": [],
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "shellcheck_2034.sh"
+                },
+                "region": {
+                  "endColumn": 5,
+                  "endLine": 2,
+                  "startColumn": 1,
+                  "startLine": 2
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "var1 appears unused. Verify use (or export if used externally)."
+          },
+          "relatedLocations": [],
+          "ruleId": "2034",
+          "ruleIndex": 0
+        }
+      ],
+      "tool": {
+        "driver": {
+          "name": "shellcheck",
+          "rules": [
+            {
+              "fullDescription": {
+                "text": "For more information: https://www.shellcheck.net/wiki/SC2034"
+              },
+              "id": "2034",
+              "name": "2034",
+              "shortDescription": {
+                "text": "SC2034"
+              }
+            },
+            {
+              "fullDescription": {
+                "text": "For more information: https://www.shellcheck.net/wiki/SC1066"
+              },
+              "id": "1066",
+              "name": "1066",
+              "shortDescription": {
+                "text": "SC1066"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "version": "2.1.0"
+}

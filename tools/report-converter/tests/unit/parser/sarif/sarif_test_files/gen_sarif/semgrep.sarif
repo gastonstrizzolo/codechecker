@@ -1,0 +1,735 @@
+{
+    "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+    "fixes": [],
+    "runs": [
+        {
+            "invocations": [
+                {
+                    "executionSuccessful": true,
+                    "toolExecutionNotifications": []
+                }
+            ],
+            "results": [
+                {
+                    "locations": [
+                        {
+                            "physicalLocation": {
+                                "artifactLocation": {
+                                    "uri": "semgrep_string_concat.py",
+                                    "uriBaseId": "%SRCROOT%"
+                                },
+                                "region": {
+                                    "endColumn": 25,
+                                    "endLine": 2,
+                                    "snippet": {
+                                        "text": "bad = [\"123\" \"456\" \"789\"]"
+                                    },
+                                    "startColumn": 8,
+                                    "startLine": 2
+                                }
+                            }
+                        }
+                    ],
+                    "message": {
+                        "text": "Detected strings that are implicitly concatenated inside a list. Python will implicitly concatenate strings when not explicitly delimited. Was this supposed to be individual elements of the list?"
+                    },
+                    "ruleId": "python.lang.correctness.common-mistakes.string-concat-in-list.string-concat-in-list"
+                },
+                {
+                    "locations": [
+                        {
+                            "physicalLocation": {
+                                "artifactLocation": {
+                                    "uri": "semgrep.code_after_ret.py",
+                                    "uriBaseId": "%SRCROOT%"
+                                },
+                                "region": {
+                                    "endColumn": 19,
+                                    "endLine": 6,
+                                    "snippet": {
+                                        "text": "    return 'red'\n    return 'green'"
+                                    },
+                                    "startColumn": 5,
+                                    "startLine": 5
+                                }
+                            }
+                        }
+                    ],
+                    "message": {
+                        "text": "code after return statement will not be executed"
+                    },
+                    "ruleId": "python.lang.maintainability.return.code-after-unconditional-return"
+                }
+            ],
+            "tool": {
+                "driver": {
+                    "name": "semgrep",
+                    "rules": [
+                        {
+                            "defaultConfiguration": {
+                                "level": "error"
+                            },
+                            "fullDescription": {
+                                "text": "`yield` should never appear inside a class __init__ function. This will cause a runtime error."
+                            },
+                            "helpUri": "https://semgrep.dev/r/python.lang.correctness.return-in-init.yield-in-init",
+                            "id": "python.lang.correctness.return-in-init.yield-in-init",
+                            "name": "python.lang.correctness.return-in-init.yield-in-init",
+                            "properties": {
+                                "precision": "very-high",
+                                "tags": []
+                            },
+                            "shortDescription": {
+                                "text": "`yield` should never appear inside a class __init__ function. This will cause a runtime error."
+                            }
+                        },
+                        {
+                            "defaultConfiguration": {
+                                "level": "warning"
+                            },
+                            "fullDescription": {
+                                "text": "Logger call may be exposing a secret credential in $FORMAT_STRING"
+                            },
+                            "helpUri": "https://semgrep.dev/r/python.lang.security.audit.logging.logger-credential-leak.python-logger-credential-disclosure",
+                            "id": "python.lang.security.audit.logging.logger-credential-leak.python-logger-credential-disclosure",
+                            "name": "python.lang.security.audit.logging.logger-credential-leak.python-logger-credential-disclosure",
+                            "properties": {
+                                "precision": "very-high",
+                                "tags": []
+                            },
+                            "shortDescription": {
+                                "text": "Logger call may be exposing a secret credential in $FORMAT_STRING"
+                            }
+                        },
+                        {
+                            "defaultConfiguration": {
+                                "level": "error"
+                            },
+                            "fullDescription": {
+                                "text": "It appears that `$LIST` is a list that is being modified while in a for loop. This will likely cause a runtime error or an infinite loop."
+                            },
+                            "helpUri": "https://semgrep.dev/r/python.lang.correctness.list-modify-iterating.list-modify-while-iterate",
+                            "id": "python.lang.correctness.list-modify-iterating.list-modify-while-iterate",
+                            "name": "python.lang.correctness.list-modify-iterating.list-modify-while-iterate",
+                            "properties": {
+                                "precision": "very-high",
+                                "tags": []
+                            },
+                            "shortDescription": {
+                                "text": "It appears that `$LIST` is a list that is being modified while in a for loop. This will likely cause a runtime error or an infinite loop."
+                            }
+                        },
+                        {
+                            "defaultConfiguration": {
+                                "level": "error"
+                            },
+                            "fullDescription": {
+                                "text": "Certificate verification has been explicitly disabled. This permits insecure connections to insecure servers. Re-enable certification validation."
+                            },
+                            "helpUri": "https://semgrep.dev/r/python.requests.security.disabled-cert-validation.disabled-cert-validation",
+                            "id": "python.requests.security.disabled-cert-validation.disabled-cert-validation",
+                            "name": "python.requests.security.disabled-cert-validation.disabled-cert-validation",
+                            "properties": {
+                                "precision": "very-high",
+                                "tags": [
+                                    "CWE-295: Improper Certificate Validation",
+                                    "OWASP-A3: Sensitive Data Exposure"
+                                ]
+                            },
+                            "shortDescription": {
+                                "text": "Certificate verification has been explicitly disabled. This permits insecure connections to insecure servers. Re-enable certification validation."
+                            }
+                        },
+                        {
+                            "defaultConfiguration": {
+                                "level": "warning"
+                            },
+                            "fullDescription": {
+                                "text": "Detected a 'requests' call without a timeout set. By default, 'requests' calls wait until the connection is closed. This means a 'requests' call without a timeout will hang the program if a response is never received. Consider setting a timeout for all 'requests'."
+                            },
+                            "helpUri": "https://semgrep.dev/r/python.requests.best-practice.use-timeout.use-timeout",
+                            "id": "python.requests.best-practice.use-timeout.use-timeout",
+                            "name": "python.requests.best-practice.use-timeout.use-timeout",
+                            "properties": {
+                                "precision": "very-high",
+                                "tags": []
+                            },
+                            "shortDescription": {
+                                "text": "Detected a 'requests' call without a timeout set. By default, 'requests' calls wait until the connection is closed. This means a 'requests' call without a timeout will hang the program if a response is never received. Consider setting a timeout for all 'requests'."
+                            }
+                        },
+                        {
+                            "defaultConfiguration": {
+                                "level": "warning"
+                            },
+                            "fullDescription": {
+                                "text": "code after return statement will not be executed"
+                            },
+                            "helpUri": "https://semgrep.dev/r/python.lang.maintainability.return.code-after-unconditional-return",
+                            "id": "python.lang.maintainability.return.code-after-unconditional-return",
+                            "name": "python.lang.maintainability.return.code-after-unconditional-return",
+                            "properties": {
+                                "precision": "very-high",
+                                "tags": []
+                            },
+                            "shortDescription": {
+                                "text": "code after return statement will not be executed"
+                            }
+                        },
+                        {
+                            "defaultConfiguration": {
+                                "level": "warning"
+                            },
+                            "fullDescription": {
+                                "text": "It appears that `$DICT[$KEY]` is a dict with items being deleted while in a for loop. This is usually a bad idea and will likely lead to a RuntimeError: dictionary changed size during iteration"
+                            },
+                            "helpUri": "https://semgrep.dev/r/python.lang.correctness.dict-modify-iterating.dict-del-while-iterate",
+                            "id": "python.lang.correctness.dict-modify-iterating.dict-del-while-iterate",
+                            "name": "python.lang.correctness.dict-modify-iterating.dict-del-while-iterate",
+                            "properties": {
+                                "precision": "very-high",
+                                "tags": []
+                            },
+                            "shortDescription": {
+                                "text": "It appears that `$DICT[$KEY]` is a dict with items being deleted while in a for loop. This is usually a bad idea and will likely lead to a RuntimeError: dictionary changed size during iteration"
+                            }
+                        },
+                        {
+                            "defaultConfiguration": {
+                                "level": "warning"
+                            },
+                            "fullDescription": {
+                                "text": "Avoid using `shelve`, which uses `pickle`, which is known to lead to code execution vulnerabilities. When unpickling, the serialized data could be manipulated to run arbitrary code. Instead, consider serializing the relevant data as JSON or a similar text-based serialization format."
+                            },
+                            "helpUri": "https://semgrep.dev/r/python.lang.security.deserialization.pickle.avoid-shelve",
+                            "id": "python.lang.security.deserialization.pickle.avoid-shelve",
+                            "name": "python.lang.security.deserialization.pickle.avoid-shelve",
+                            "properties": {
+                                "precision": "very-high",
+                                "tags": [
+                                    "CWE-502: Deserialization of Untrusted Data",
+                                    "OWASP-A8: Insecure Deserialization"
+                                ]
+                            },
+                            "shortDescription": {
+                                "text": "Avoid using `shelve`, which uses `pickle`, which is known to lead to code execution vulnerabilities. When unpickling, the serialized data could be manipulated to run arbitrary code. Instead, consider serializing the relevant data as JSON or a similar text-based serialization format."
+                            }
+                        },
+                        {
+                            "defaultConfiguration": {
+                                "level": "error"
+                            },
+                            "fullDescription": {
+                                "text": "In Python3, a runtime `TypeError` will be thrown if you attempt to raise an object or class which does not inherit from `BaseException`"
+                            },
+                            "helpUri": "https://semgrep.dev/r/python.lang.correctness.exceptions.exceptions.raise-not-base-exception",
+                            "id": "python.lang.correctness.exceptions.exceptions.raise-not-base-exception",
+                            "name": "python.lang.correctness.exceptions.exceptions.raise-not-base-exception",
+                            "properties": {
+                                "precision": "very-high",
+                                "tags": []
+                            },
+                            "shortDescription": {
+                                "text": "In Python3, a runtime `TypeError` will be thrown if you attempt to raise an object or class which does not inherit from `BaseException`"
+                            }
+                        },
+                        {
+                            "defaultConfiguration": {
+                                "level": "error"
+                            },
+                            "fullDescription": {
+                                "text": "Avoid using `load()`. `PyYAML.load` can create arbitrary Python objects. A malicious actor could exploit this to run arbitrary code. Use `safe_load()` instead."
+                            },
+                            "helpUri": "https://semgrep.dev/r/python.lang.security.deserialization.avoid-pyyaml-load.avoid-pyyaml-load",
+                            "id": "python.lang.security.deserialization.avoid-pyyaml-load.avoid-pyyaml-load",
+                            "name": "python.lang.security.deserialization.avoid-pyyaml-load.avoid-pyyaml-load",
+                            "properties": {
+                                "precision": "very-high",
+                                "tags": [
+                                    "CWE-502: Deserialization of Untrusted Data",
+                                    "OWASP-A8: Insecure Deserialization"
+                                ]
+                            },
+                            "shortDescription": {
+                                "text": "Avoid using `load()`. `PyYAML.load` can create arbitrary Python objects. A malicious actor could exploit this to run arbitrary code. Use `safe_load()` instead."
+                            }
+                        },
+                        {
+                            "defaultConfiguration": {
+                                "level": "warning"
+                            },
+                            "fullDescription": {
+                                "text": "Detected possible formatted SQL query. Use parameterized queries instead."
+                            },
+                            "helpUri": "https://semgrep.dev/r/python.lang.security.audit.formatted-sql-query.formatted-sql-query",
+                            "id": "python.lang.security.audit.formatted-sql-query.formatted-sql-query",
+                            "name": "python.lang.security.audit.formatted-sql-query.formatted-sql-query",
+                            "properties": {
+                                "precision": "very-high",
+                                "tags": [
+                                    "CWE-89: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')",
+                                    "OWASP-A1: Injection"
+                                ]
+                            },
+                            "shortDescription": {
+                                "text": "Detected possible formatted SQL query. Use parameterized queries instead."
+                            }
+                        },
+                        {
+                            "defaultConfiguration": {
+                                "level": "error"
+                            },
+                            "fullDescription": {
+                                "text": "Authentication detected over HTTP. HTTP does not provide any encryption or protection for these authentication credentials. This may expose these credentials to unauthorized parties. Use 'https://' instead."
+                            },
+                            "helpUri": "https://semgrep.dev/r/python.requests.security.no-auth-over-http.no-auth-over-http",
+                            "id": "python.requests.security.no-auth-over-http.no-auth-over-http",
+                            "name": "python.requests.security.no-auth-over-http.no-auth-over-http",
+                            "properties": {
+                                "precision": "very-high",
+                                "tags": [
+                                    "CWE-523: Unprotected Transport of Credentials",
+                                    "OWASP-A2: Broken Authentication"
+                                ]
+                            },
+                            "shortDescription": {
+                                "text": "Authentication detected over HTTP. HTTP does not provide any encryption or protection for these authentication credentials. This may expose these credentials to unauthorized parties. Use 'https://' instead."
+                            }
+                        },
+                        {
+                            "defaultConfiguration": {
+                                "level": "error"
+                            },
+                            "fullDescription": {
+                                "text": "Detected HTTPConnectionPool. This will transmit data in cleartext. It is recommended to use HTTPSConnectionPool instead for to encrypt communications."
+                            },
+                            "helpUri": "https://semgrep.dev/r/python.lang.security.audit.network.http-not-https-connection.http-not-https-connection",
+                            "id": "python.lang.security.audit.network.http-not-https-connection.http-not-https-connection",
+                            "name": "python.lang.security.audit.network.http-not-https-connection.http-not-https-connection",
+                            "properties": {
+                                "precision": "very-high",
+                                "tags": [
+                                    "CWE-319: Cleartext Transmission of Sensitive Information",
+                                    "OWASP-A3: Sensitive Data Exposure"
+                                ]
+                            },
+                            "shortDescription": {
+                                "text": "Detected HTTPConnectionPool. This will transmit data in cleartext. It is recommended to use HTTPSConnectionPool instead for to encrypt communications."
+                            }
+                        },
+                        {
+                            "defaultConfiguration": {
+                                "level": "note"
+                            },
+                            "fullDescription": {
+                                "text": "Running `socket.bind` to 0.0.0.0, ::, or empty string could unexpectedly expose the server publicly as it binds to all available interfaces. Consider instead getting correct address from an environment variable or configuration file."
+                            },
+                            "helpUri": "https://semgrep.dev/r/python.lang.security.audit.network.bind.avoid-bind-to-all-interfaces",
+                            "id": "python.lang.security.audit.network.bind.avoid-bind-to-all-interfaces",
+                            "name": "python.lang.security.audit.network.bind.avoid-bind-to-all-interfaces",
+                            "properties": {
+                                "precision": "very-high",
+                                "tags": [
+                                    "CWE-200: Exposure of Sensitive Information to an Unauthorized Actor",
+                                    "OWASP-A6: Security Misconfiguration"
+                                ]
+                            },
+                            "shortDescription": {
+                                "text": "Running `socket.bind` to 0.0.0.0, ::, or empty string could unexpectedly expose the server publicly as it binds to all available interfaces. Consider instead getting correct address from an environment variable or configuration file."
+                            }
+                        },
+                        {
+                            "defaultConfiguration": {
+                                "level": "error"
+                            },
+                            "fullDescription": {
+                                "text": "`return` should never appear inside a class __init__ function. This will cause a runtime error."
+                            },
+                            "helpUri": "https://semgrep.dev/r/python.lang.correctness.return-in-init.return-in-init",
+                            "id": "python.lang.correctness.return-in-init.return-in-init",
+                            "name": "python.lang.correctness.return-in-init.return-in-init",
+                            "properties": {
+                                "precision": "very-high",
+                                "tags": []
+                            },
+                            "shortDescription": {
+                                "text": "`return` should never appear inside a class __init__ function. This will cause a runtime error."
+                            }
+                        },
+                        {
+                            "defaultConfiguration": {
+                                "level": "error"
+                            },
+                            "fullDescription": {
+                                "text": "Function $F mutates default list $D. Python only instantiates default function arguments once and shares the instance across the function calls. If the default function argument is mutated, that will modify the instance used by all future function calls. This can cause unexpected results, or lead to security vulnerabilities whereby one function consumer can view or modify the data of another function consumer. Instead, use a default argument (like None) to indicate that no argument was provided and instantiate a new list at that time. For example: `if $D is None: $D = []`."
+                            },
+                            "helpUri": "https://semgrep.dev/r/python.lang.correctness.common-mistakes.default-mutable-list.default-mutable-list",
+                            "id": "python.lang.correctness.common-mistakes.default-mutable-list.default-mutable-list",
+                            "name": "python.lang.correctness.common-mistakes.default-mutable-list.default-mutable-list",
+                            "properties": {
+                                "precision": "very-high",
+                                "tags": []
+                            },
+                            "shortDescription": {
+                                "text": "Function $F mutates default list $D. Python only instantiates default function arguments once and shares the instance across the function calls. If the default function argument is mutated, that will modify the instance used by all future function calls. This can cause unexpected results, or lead to security vulnerabilities whereby one function consumer can view or modify the data of another function consumer. Instead, use a default argument (like None) to indicate that no argument was provided and instantiate a new list at that time. For example: `if $D is None: $D = []`."
+                            }
+                        },
+                        {
+                            "defaultConfiguration": {
+                                "level": "error"
+                            },
+                            "fullDescription": {
+                                "text": "Found identical comparison using is. Ensure this is what you intended."
+                            },
+                            "helpUri": "https://semgrep.dev/r/python.lang.correctness.common-mistakes.is-comparison-string.identical-is-comparison",
+                            "id": "python.lang.correctness.common-mistakes.is-comparison-string.identical-is-comparison",
+                            "name": "python.lang.correctness.common-mistakes.is-comparison-string.identical-is-comparison",
+                            "properties": {
+                                "precision": "very-high",
+                                "tags": []
+                            },
+                            "shortDescription": {
+                                "text": "Found identical comparison using is. Ensure this is what you intended."
+                            }
+                        },
+                        {
+                            "defaultConfiguration": {
+                                "level": "warning"
+                            },
+                            "fullDescription": {
+                                "text": "Detected strings that are implicitly concatenated inside a list. Python will implicitly concatenate strings when not explicitly delimited. Was this supposed to be individual elements of the list?"
+                            },
+                            "helpUri": "https://semgrep.dev/r/python.lang.correctness.common-mistakes.string-concat-in-list.string-concat-in-list",
+                            "id": "python.lang.correctness.common-mistakes.string-concat-in-list.string-concat-in-list",
+                            "name": "python.lang.correctness.common-mistakes.string-concat-in-list.string-concat-in-list",
+                            "properties": {
+                                "precision": "very-high",
+                                "tags": []
+                            },
+                            "shortDescription": {
+                                "text": "Detected strings that are implicitly concatenated inside a list. Python will implicitly concatenate strings when not explicitly delimited. Was this supposed to be individual elements of the list?"
+                            }
+                        },
+                        {
+                            "defaultConfiguration": {
+                                "level": "warning"
+                            },
+                            "fullDescription": {
+                                "text": "Avoid using `dill`, which uses `pickle`, which is known to lead to code execution vulnerabilities. When unpickling, the serialized data could be manipulated to run arbitrary code. Instead, consider serializing the relevant data as JSON or a similar text-based serialization format."
+                            },
+                            "helpUri": "https://semgrep.dev/r/python.lang.security.deserialization.pickle.avoid-dill",
+                            "id": "python.lang.security.deserialization.pickle.avoid-dill",
+                            "name": "python.lang.security.deserialization.pickle.avoid-dill",
+                            "properties": {
+                                "precision": "very-high",
+                                "tags": [
+                                    "CWE-502: Deserialization of Untrusted Data",
+                                    "OWASP-A8: Insecure Deserialization"
+                                ]
+                            },
+                            "shortDescription": {
+                                "text": "Avoid using `dill`, which uses `pickle`, which is known to lead to code execution vulnerabilities. When unpickling, the serialized data could be manipulated to run arbitrary code. Instead, consider serializing the relevant data as JSON or a similar text-based serialization format."
+                            }
+                        },
+                        {
+                            "defaultConfiguration": {
+                                "level": "warning"
+                            },
+                            "fullDescription": {
+                                "text": "Avoid using `pickle`, which is known to lead to code execution vulnerabilities. When unpickling, the serialized data could be manipulated to run arbitrary code. Instead, consider serializing the relevant data as JSON or a similar text-based serialization format."
+                            },
+                            "helpUri": "https://semgrep.dev/r/python.lang.security.deserialization.pickle.avoid-pickle",
+                            "id": "python.lang.security.deserialization.pickle.avoid-pickle",
+                            "name": "python.lang.security.deserialization.pickle.avoid-pickle",
+                            "properties": {
+                                "precision": "very-high",
+                                "tags": [
+                                    "CWE-502: Deserialization of Untrusted Data",
+                                    "OWASP-A8: Insecure Deserialization"
+                                ]
+                            },
+                            "shortDescription": {
+                                "text": "Avoid using `pickle`, which is known to lead to code execution vulnerabilities. When unpickling, the serialized data could be manipulated to run arbitrary code. Instead, consider serializing the relevant data as JSON or a similar text-based serialization format."
+                            }
+                        },
+                        {
+                            "defaultConfiguration": {
+                                "level": "warning"
+                            },
+                            "fullDescription": {
+                                "text": "Detected usage of @csrf_exempt, which indicates that there is no CSRF token set for this route. This could lead to an attacker manipulating the user's account and exfiltration of private data. Instead, create a function without this decorator."
+                            },
+                            "helpUri": "https://semgrep.dev/r/python.django.security.audit.csrf-exempt.no-csrf-exempt",
+                            "id": "python.django.security.audit.csrf-exempt.no-csrf-exempt",
+                            "name": "python.django.security.audit.csrf-exempt.no-csrf-exempt",
+                            "properties": {
+                                "precision": "very-high",
+                                "tags": [
+                                    "CWE-352: Cross-Site Request Forgery (CSRF)",
+                                    "OWASP-A6: Security Misconfiguration"
+                                ]
+                            },
+                            "shortDescription": {
+                                "text": "Detected usage of @csrf_exempt, which indicates that there is no CSRF token set for this route. This could lead to an attacker manipulating the user's account and exfiltration of private data. Instead, create a function without this decorator."
+                            }
+                        },
+                        {
+                            "defaultConfiguration": {
+                                "level": "error"
+                            },
+                            "fullDescription": {
+                                "text": "Looks like you are only accessing first element of an ordered QuerySet. Use `latest()` or `earliest()` instead. See https://docs.djangoproject.com/en/3.0/ref/models/querysets/#django.db.models.query.QuerySet.latest"
+                            },
+                            "helpUri": "https://semgrep.dev/r/python.django.performance.upsell_earliest_latest.use-earliest-or-latest",
+                            "id": "python.django.performance.upsell_earliest_latest.use-earliest-or-latest",
+                            "name": "python.django.performance.upsell_earliest_latest.use-earliest-or-latest",
+                            "properties": {
+                                "precision": "very-high",
+                                "tags": []
+                            },
+                            "shortDescription": {
+                                "text": "Looks like you are only accessing first element of an ordered QuerySet. Use `latest()` or `earliest()` instead. See https://docs.djangoproject.com/en/3.0/ref/models/querysets/#django.db.models.query.QuerySet.latest"
+                            }
+                        },
+                        {
+                            "defaultConfiguration": {
+                                "level": "warning"
+                            },
+                            "fullDescription": {
+                                "text": "Avoid using `cPickle`, which is known to lead to code execution vulnerabilities. When unpickling, the serialized data could be manipulated to run arbitrary code. Instead, consider serializing the relevant data as JSON or a similar text-based serialization format."
+                            },
+                            "helpUri": "https://semgrep.dev/r/python.lang.security.deserialization.pickle.avoid-cPickle",
+                            "id": "python.lang.security.deserialization.pickle.avoid-cPickle",
+                            "name": "python.lang.security.deserialization.pickle.avoid-cPickle",
+                            "properties": {
+                                "precision": "very-high",
+                                "tags": [
+                                    "CWE-502: Deserialization of Untrusted Data",
+                                    "OWASP-A8: Insecure Deserialization"
+                                ]
+                            },
+                            "shortDescription": {
+                                "text": "Avoid using `cPickle`, which is known to lead to code execution vulnerabilities. When unpickling, the serialized data could be manipulated to run arbitrary code. Instead, consider serializing the relevant data as JSON or a similar text-based serialization format."
+                            }
+                        },
+                        {
+                            "defaultConfiguration": {
+                                "level": "error"
+                            },
+                            "fullDescription": {
+                                "text": "This expression is always True: `$X == $X` or `$X != $X`. If testing for floating point NaN, use `math.isnan($X)`, or `cmath.isnan($X)` if the number is complex."
+                            },
+                            "helpUri": "https://semgrep.dev/r/python.lang.correctness.useless-eqeq.useless-eqeq",
+                            "id": "python.lang.correctness.useless-eqeq.useless-eqeq",
+                            "name": "python.lang.correctness.useless-eqeq.useless-eqeq",
+                            "properties": {
+                                "precision": "very-high",
+                                "tags": []
+                            },
+                            "shortDescription": {
+                                "text": "This expression is always True: `$X == $X` or `$X != $X`. If testing for floating point NaN, use `math.isnan($X)`, or `cmath.isnan($X)` if the number is complex."
+                            }
+                        },
+                        {
+                            "defaultConfiguration": {
+                                "level": "error"
+                            },
+                            "fullDescription": {
+                                "text": "Found request data in a call to 'open'. Ensure the request data is validated or sanitized, otherwise it could result in path traversal attacks."
+                            },
+                            "helpUri": "https://semgrep.dev/r/python.flask.security.injection.path-traversal-open.path-traversal-open",
+                            "id": "python.flask.security.injection.path-traversal-open.path-traversal-open",
+                            "name": "python.flask.security.injection.path-traversal-open.path-traversal-open",
+                            "properties": {
+                                "precision": "very-high",
+                                "tags": [
+                                    "CWE-22: Improper Limitation of a Pathname to a Restricted Directory ('Path Traversal')",
+                                    "OWASP-A1: Injection"
+                                ]
+                            },
+                            "shortDescription": {
+                                "text": "Found request data in a call to 'open'. Ensure the request data is validated or sanitized, otherwise it could result in path traversal attacks."
+                            }
+                        },
+                        {
+                            "defaultConfiguration": {
+                                "level": "error"
+                            },
+                            "fullDescription": {
+                                "text": "Function $F mutates default dict $D. Python only instantiates default function arguments once and shares the instance across the function calls. If the default function argument is mutated, that will modify the instance used by all future function calls. This can cause unexpected results, or lead to security vulnerabilities whereby one function consumer can view or modify the data of another function consumer. Instead, use a default argument (like None) to indicate that no argument was provided and instantiate a new dictionary at that time. For example: `if $D is None: $D = {}`."
+                            },
+                            "helpUri": "https://semgrep.dev/r/python.lang.correctness.common-mistakes.default-mutable-dict.default-mutable-dict",
+                            "id": "python.lang.correctness.common-mistakes.default-mutable-dict.default-mutable-dict",
+                            "name": "python.lang.correctness.common-mistakes.default-mutable-dict.default-mutable-dict",
+                            "properties": {
+                                "precision": "very-high",
+                                "tags": []
+                            },
+                            "shortDescription": {
+                                "text": "Function $F mutates default dict $D. Python only instantiates default function arguments once and shares the instance across the function calls. If the default function argument is mutated, that will modify the instance used by all future function calls. This can cause unexpected results, or lead to security vulnerabilities whereby one function consumer can view or modify the data of another function consumer. Instead, use a default argument (like None) to indicate that no argument was provided and instantiate a new dictionary at that time. For example: `if $D is None: $D = {}`."
+                            }
+                        },
+                        {
+                            "defaultConfiguration": {
+                                "level": "warning"
+                            },
+                            "fullDescription": {
+                                "text": "Use `sys.exit` over the python shell `exit` built-in. `exit` is a helper for the interactive shell and may not be available on all Python implementations. https://stackoverflow.com/questions/6501121/difference-between-exit-and-sys-exit-in-python"
+                            },
+                            "helpUri": "https://semgrep.dev/r/python.lang.correctness.exit.use-sys-exit",
+                            "id": "python.lang.correctness.exit.use-sys-exit",
+                            "name": "python.lang.correctness.exit.use-sys-exit",
+                            "properties": {
+                                "precision": "very-high",
+                                "tags": []
+                            },
+                            "shortDescription": {
+                                "text": "Use `sys.exit` over the python shell `exit` built-in. `exit` is a helper for the interactive shell and may not be available on all Python implementations. https://stackoverflow.com/questions/6501121/difference-between-exit-and-sys-exit-in-python"
+                            }
+                        },
+                        {
+                            "defaultConfiguration": {
+                                "level": "warning"
+                            },
+                            "fullDescription": {
+                                "text": "This is not checking the return value of this subprocess call; if it fails no exception will be raised. Consider subprocess.check_call() instead"
+                            },
+                            "helpUri": "https://semgrep.dev/r/python.lang.correctness.unchecked-returns.unchecked-subprocess-call",
+                            "id": "python.lang.correctness.unchecked-returns.unchecked-subprocess-call",
+                            "name": "python.lang.correctness.unchecked-returns.unchecked-subprocess-call",
+                            "properties": {
+                                "precision": "very-high",
+                                "tags": []
+                            },
+                            "shortDescription": {
+                                "text": "This is not checking the return value of this subprocess call; if it fails no exception will be raised. Consider subprocess.check_call() instead"
+                            }
+                        },
+                        {
+                            "defaultConfiguration": {
+                                "level": "warning"
+                            },
+                            "fullDescription": {
+                                "text": "The marshal module is not intended to be secure against erroneous or maliciously constructed data. Never unmarshal data received from an untrusted or unauthenticated source. See more details: https://docs.python.org/3/library/marshal.html?highlight=security"
+                            },
+                            "helpUri": "https://semgrep.dev/r/python.lang.security.audit.marshal.marshal-usage",
+                            "id": "python.lang.security.audit.marshal.marshal-usage",
+                            "name": "python.lang.security.audit.marshal.marshal-usage",
+                            "properties": {
+                                "precision": "very-high",
+                                "tags": [
+                                    "CWE-502: Deserialization of Untrusted Data",
+                                    "OWASP-A8: Insecure Deserialization"
+                                ]
+                            },
+                            "shortDescription": {
+                                "text": "The marshal module is not intended to be secure against erroneous or maliciously constructed data. Never unmarshal data received from an untrusted or unauthenticated source. See more details: https://docs.python.org/3/library/marshal.html?highlight=security"
+                            }
+                        },
+                        {
+                            "defaultConfiguration": {
+                                "level": "warning"
+                            },
+                            "fullDescription": {
+                                "text": "Django REST framework configuration is missing default rate- limiting options. This could inadvertently allow resource starvation or Denial of Service (DoS) attacks. Add 'DEFAULT_THROTTLE_CLASSES' and 'DEFAULT_THROTTLE_RATES' to add rate-limiting to your application."
+                            },
+                            "helpUri": "https://semgrep.dev/r/python.django.security.audit.django-rest-framework.missing-throttle-config.missing-throttle-config",
+                            "id": "python.django.security.audit.django-rest-framework.missing-throttle-config.missing-throttle-config",
+                            "name": "python.django.security.audit.django-rest-framework.missing-throttle-config.missing-throttle-config",
+                            "properties": {
+                                "precision": "very-high",
+                                "tags": [
+                                    "CWE-400: Uncontrolled Resource Consumption",
+                                    "OWASP-A6: Security Misconfiguration"
+                                ]
+                            },
+                            "shortDescription": {
+                                "text": "Django REST framework configuration is missing default rate- limiting options. This could inadvertently allow resource starvation or Denial of Service (DoS) attacks. Add 'DEFAULT_THROTTLE_CLASSES' and 'DEFAULT_THROTTLE_RATES' to add rate-limiting to your application."
+                            }
+                        },
+                        {
+                            "defaultConfiguration": {
+                                "level": "warning"
+                            },
+                            "fullDescription": {
+                                "text": "Because portions of the logging configuration are passed through eval(), use of this function may open its users to a security risk. While the function only binds to a socket on localhost, and so does not accept connections from remote machines, there are scenarios where untrusted code could be run under the account of the process which calls listen(). To avoid this happening, use the `verify()` argument to `listen()` to prevent unrecognized configurations."
+                            },
+                            "helpUri": "https://semgrep.dev/r/python.lang.security.audit.logging.listeneval.listen-eval",
+                            "id": "python.lang.security.audit.logging.listeneval.listen-eval",
+                            "name": "python.lang.security.audit.logging.listeneval.listen-eval",
+                            "properties": {
+                                "precision": "very-high",
+                                "tags": [
+                                    "CWE-95: Improper Neutralization of Directives in Dynamically Evaluated Code ('Eval Injection')",
+                                    "OWASP-A6: Security Misconfiguration"
+                                ]
+                            },
+                            "shortDescription": {
+                                "text": "Because portions of the logging configuration are passed through eval(), use of this function may open its users to a security risk. While the function only binds to a socket on localhost, and so does not accept connections from remote machines, there are scenarios where untrusted code could be run under the account of the process which calls listen(). To avoid this happening, use the `verify()` argument to `listen()` to prevent unrecognized configurations."
+                            }
+                        },
+                        {
+                            "defaultConfiguration": {
+                                "level": "error"
+                            },
+                            "fullDescription": {
+                                "text": "Detected the use of 'RawSQL' or 'raw' indicating the execution of a non-parameterized SQL query. This could lead to a SQL injection and therefore protected information could be leaked. Instead, use Django ORM and parameterized queries before raw SQL. An example of using the Django ORM is: `People.objects.get(name='Bob')`"
+                            },
+                            "helpUri": "https://semgrep.dev/r/python.django.security.audit.raw-query.avoid-raw-sql",
+                            "id": "python.django.security.audit.raw-query.avoid-raw-sql",
+                            "name": "python.django.security.audit.raw-query.avoid-raw-sql",
+                            "properties": {
+                                "precision": "very-high",
+                                "tags": [
+                                    "CWE-89: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')",
+                                    "OWASP-A1: Injection"
+                                ]
+                            },
+                            "shortDescription": {
+                                "text": "Detected the use of 'RawSQL' or 'raw' indicating the execution of a non-parameterized SQL query. This could lead to a SQL injection and therefore protected information could be leaked. Instead, use Django ORM and parameterized queries before raw SQL. An example of using the Django ORM is: `People.objects.get(name='Bob')`"
+                            }
+                        },
+                        {
+                            "defaultConfiguration": {
+                                "level": "error"
+                            },
+                            "fullDescription": {
+                                "text": "Found string comparison using 'is' operator. The 'is' operator is for reference equality, not value equality, and therefore should not be used to compare strings. For more information, see https://github.com/satwikkansal/wtfpython#-how-not-to-use-is-operator\""
+                            },
+                            "helpUri": "https://semgrep.dev/r/python.lang.correctness.common-mistakes.is-comparison-string.string-is-comparison",
+                            "id": "python.lang.correctness.common-mistakes.is-comparison-string.string-is-comparison",
+                            "name": "python.lang.correctness.common-mistakes.is-comparison-string.string-is-comparison",
+                            "properties": {
+                                "precision": "very-high",
+                                "tags": []
+                            },
+                            "shortDescription": {
+                                "text": "Found string comparison using 'is' operator. The 'is' operator is for reference equality, not value equality, and therefore should not be used to compare strings. For more information, see https://github.com/satwikkansal/wtfpython#-how-not-to-use-is-operator\""
+                            }
+                        },
+                        {
+                            "defaultConfiguration": {
+                                "level": "error"
+                            },
+                            "fullDescription": {
+                                "text": "Using strings as booleans in Python has unexpected results. `\"one\" and \"two\"` will return \"two\". `\"one\" or \"two\"` will return \"one\". In Python, strings are truthy, and strings with a non-zero length evaluate to True."
+                            },
+                            "helpUri": "https://semgrep.dev/r/python.lang.correctness.useless-comparison.no-strings-as-booleans",
+                            "id": "python.lang.correctness.useless-comparison.no-strings-as-booleans",
+                            "name": "python.lang.correctness.useless-comparison.no-strings-as-booleans",
+                            "properties": {
+                                "precision": "very-high",
+                                "tags": []
+                            },
+                            "shortDescription": {
+                                "text": "Using strings as booleans in Python has unexpected results. `\"one\" and \"two\"` will return \"two\". `\"one\" or \"two\"` will return \"one\". In Python, strings are truthy, and strings with a non-zero length evaluate to True."
+                            }
+                        }
+                    ],
+                    "semanticVersion": "0.96.0"
+                }
+            }
+        }
+    ],
+    "version": "2.1.0"
+}
