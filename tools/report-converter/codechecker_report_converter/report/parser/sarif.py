@@ -18,7 +18,7 @@ from typing import Any, Dict, List, NamedTuple, Optional, Tuple
 
 from codechecker_report_converter import util
 from codechecker_report_converter.report import BugPathEvent, \
-    BugPathPosition, File, get_or_create_file, Range, Report
+    BugPathPosition, File, MacroExpansion, get_or_create_file, Range, Report
 from codechecker_report_converter.report.hash import get_report_hash, HashType
 from codechecker_report_converter.report.parser.base import AnalyzerInfo, \
     BaseParser
@@ -36,13 +36,13 @@ class Location(NamedTuple):
     """
     file: File
     range: Range
-    message: Optional[str] = ""
+    message: str
 
 
 class ThreadFlowInfo(NamedTuple):
     bug_path_events: List[BugPathEvent] = []
     notes: List[BugPathEvent] = []
-    macro_expansions: List[BugPathEvent] = []
+    macro_expansions: Optional[List[MacroExpansion]] = []
 
 
 class Parser(BaseParser):
@@ -114,7 +114,7 @@ class Parser(BaseParser):
         result: Dict,
         rule_id: str,
         rules: Dict[str, Dict]
-    ) -> Tuple[List[BugPathEvent], List[BugPathEvent], List[BugPathEvent]]:
+    ) -> ThreadFlowInfo:
         """ """
         thread_flow_info = ThreadFlowInfo()
 
@@ -124,15 +124,26 @@ class Parser(BaseParser):
                     location = self._process_location(
                         raw_location, rule_id, rules)
 
-                    # TODO: check the importance field.
-                    mybugpathevent = BugPathEvent(
-                            location.message,
-                            location.file,
-                            location.range.start_line,
-                            location.range.start_col,
-                            location.range
-                        )
-                    thread_flow_info.bug_path_events.append(mybugpathevent)
+                    if location is not None:
+                        # TODO: check the importance field.
+                        # if location.message is not None:
+                        #     bug_path_event_message = location.message
+                        # else:
+                        #     bug_path_event_message = "Empty message"
+
+                        if location.file is not None:
+                            bug_path_event_file = location.file
+                            # TODO: investigate what to return if is None
+
+                        bug_path_event_to_create = BugPathEvent(
+                                location.message,
+                                bug_path_event_file,
+                                location.range.start_line,
+                                location.range.start_col,
+                                location.range
+                            )
+                        thread_flow_info.bug_path_events.append(
+                            bug_path_event_to_create)
         return thread_flow_info
 
     def _process_location(
@@ -140,20 +151,20 @@ class Parser(BaseParser):
         location: Dict,
         rule_id: str,
         rules: Dict[str, Dict]
-    ) -> Optional[Tuple[str, Optional[File], Optional[Range]]]:
-        message = "<Unknown message>"
+    ) -> Optional[Location]:
+        msg = "<Unknown message>"
         if "message" in location:
-            message = self._process_message(
+            msg = self._process_message(
                 location["message"], rule_id, rules)
 
         file, rng = self._process_physical_location(location)
 
-        return Location(message=message, file=file, range=rng)
+        return Location(message=msg, file=file, range=rng) if file else None
 
     def _process_physical_location(
         self,
         location: Dict,
-    ) -> Tuple[Optional[File], Optional[Range]]:
+    ) -> Tuple[Optional[File], Range]:
         """ """
         physical_loc = location.get("physicalLocation")
         # Physical loc is required, must always be present.
@@ -162,14 +173,14 @@ class Parser(BaseParser):
             rng = self._get_range(physical_loc)
             return file, rng
 
-        return None, None
+        return None, Range(-1, -1, -1, -1)
 
-    def _get_range(self, physical_loc: Dict) -> Optional[Range]:
+    def _get_range(self, physical_loc: Dict) -> Range:
         """ Get range from a physical location. """
         region = physical_loc.get("region", {})
         start_line = region.get("startLine")
         if start_line is None:
-            return None
+            return Range(-1, -1, -1, -1)
 
         start_col = region.get("startColumn", 1)
         end_line = region.get("endLine", start_line)
@@ -282,7 +293,7 @@ class Parser(BaseParser):
                     note, "essential"))
 
         if report.macro_expansions:
-            for macro_expansion in report.macro_expansion:
+            for macro_expansion in report.macro_expansions:
                 locations.append(self._create_location_from_bug_path_event(
                     macro_expansion, "essential"))
 
@@ -313,8 +324,8 @@ class Parser(BaseParser):
     def _create_location(
         self,
         pos: BugPathPosition,
-        line: Optional[int] = -1,
-        column: Optional[int] = -1
+        line: int = -1,
+        column: int = -1
     ) -> Dict[str, Any]:
         """ Create location from bug path position. """
         if pos.range:

@@ -1,0 +1,60 @@
+{
+    "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+    "fixes": [],
+    "runs": [
+        {
+            "invocations": [
+                {
+                    "executionSuccessful": true,
+                    "toolExecutionNotifications": []
+                }
+            ],
+            "results": [],
+            "tool": {
+                "driver": {
+                    "name": "semgrep",
+                    "rules": [
+                        {
+                            "defaultConfiguration": {
+                                "level": "warning"
+                            },
+                            "fullDescription": {
+                                "text": "Socket is not closed if shutdown fails. When socket.shutdown fails on an OSError, socket.close is not called and the code fails to clean up the socket and allow garbage collection to release the memory used for it. The OSError on shutdown can occur when the remote side of the connection closes the connection first."
+                            },
+                            "helpUri": "https://semgrep.dev/r/python.correctness.socket-shutdown-close.socket-shutdown-close",
+                            "id": "python.correctness.socket-shutdown-close.socket-shutdown-close",
+                            "name": "python.correctness.socket-shutdown-close.socket-shutdown-close",
+                            "properties": {
+                                "precision": "very-high",
+                                "tags": []
+                            },
+                            "shortDescription": {
+                                "text": "Socket is not closed if shutdown fails. When socket.shutdown fails on an OSError, socket.close is not called and the code fails to clean up the socket and allow garbage collection to release the memory used for it. The OSError on shutdown can occur when the remote side of the connection closes the connection first."
+                            }
+                        },
+                        {
+                            "defaultConfiguration": {
+                                "level": "warning"
+                            },
+                            "fullDescription": {
+                                "text": "Having a `break`, `continue`, or `return` in a `finally` block will cause strange behaviors, like exceptions not being caught."
+                            },
+                            "helpUri": "https://semgrep.dev/r/python.correctness.suppressed-exception-handling-finally-break.suppressed-exception-handling-finally-break",
+                            "id": "python.correctness.suppressed-exception-handling-finally-break.suppressed-exception-handling-finally-break",
+                            "name": "python.correctness.suppressed-exception-handling-finally-break.suppressed-exception-handling-finally-break",
+                            "properties": {
+                                "precision": "very-high",
+                                "tags": []
+                            },
+                            "shortDescription": {
+                                "text": "Having a `break`, `continue`, or `return` in a `finally` block will cause strange behaviors, like exceptions not being caught."
+                            }
+                        }
+                    ],
+                    "semanticVersion": "0.97.0"
+                }
+            }
+        }
+    ],
+    "version": "2.1.0"
+}
