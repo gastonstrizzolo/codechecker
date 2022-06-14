@@ -17,7 +17,7 @@ const commands = {
 
 module.exports = {
   url: function() { 
-    return this.api.launchUrl + '/login'; 
+    return this.api.launchUrl + "/login"; 
   },
   commands: [ commands ],
   elements: {
@@ -29,4 +29,4 @@ module.exports = {
     userNameErrorMessages: ".v-input:nth-child(1) .v-messages",
     passwordErrorMessages: ".v-input:nth-child(2) .v-messages"
   }
-}
+};

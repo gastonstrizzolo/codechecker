@@ -46,7 +46,8 @@ from codechecker_api.ProductManagement_v6 import \
     codeCheckerProductService as ProductAPI_v6
 from codechecker_api.ServerInfo_v6 import \
     serverInfoService as ServerInfoAPI_v6
-
+from codechecker_api.Jira_v6 import \
+    jiraService as JiraAPI_v6
 from codechecker_common.logger import get_logger
 
 from codechecker_web.shared.version import get_version_str
@@ -64,6 +65,8 @@ from .api.product_server import ThriftProductHandler as ProductHandler_v6
 from .api.report_server import ThriftRequestHandler as ReportHandler_v6
 from .api.server_info_handler import \
     ThriftServerInfoHandler as ServerInfoHandler_v6
+from .api.jira_handler import \
+    ThriftJiraHandler as JiraHandler_v6
 from .database import database, db_cleanup
 from .database.config_db_model import Product as ORMProduct, \
     Configuration as ORMConfiguration
@@ -400,6 +403,10 @@ class RequestHandler(SimpleHTTPRequestHandler):
                     elif request_endpoint == 'ServerInfo':
                         server_info_handler = ServerInfoHandler_v6(version)
                         processor = ServerInfoAPI_v6.Processor(
+                            server_info_handler)
+                    elif request_endpoint == 'Jira':
+                        server_info_handler = JiraHandler_v6()
+                        processor = JiraAPI_v6.Processor(
                             server_info_handler)
                     elif request_endpoint == 'Products':
                         prod_handler = ProductHandler_v6(

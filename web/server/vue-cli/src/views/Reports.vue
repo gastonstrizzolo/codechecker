@@ -13,7 +13,15 @@
         :value.sync="checkerDocDialog"
         :checker="selectedChecker"
       />
-
+      <alerts
+        v-for="(alert, index) in alertList"
+        :key="index"
+        :success="!alert.isError"
+        :success-msg="alert.msg"
+        :link="alert.link"
+        :error="alert.isError"
+        :error-msg="alert.msg"
+      />
       <v-data-table
         v-model="selected"
         v-fill-height
@@ -35,7 +43,16 @@
         <template v-slot:top>
           <v-toolbar flat class="report-filter-toolbar" dense>
             <v-row>
-              <v-col class="pa-0" align="right">
+              <v-col class="pa-0 d-flex align-center justify-end" align="right">
+                <v-autocomplete
+                  v-model="project"
+                  :items="projectList"
+                  label="Project"
+                  :disabled="$route.query['cleanup-plan'] === undefined"
+                  class="jira-select"
+                  :rules="projectListRules"
+                />
+                <create-jira-ticket-btn class="mr-4" :project="project" @alertData="addAlert" />
                 <set-cleanup-plan-btn :value="selected" />
               </v-col>
             </v-row>
@@ -172,7 +189,7 @@ import { Pane, Splitpanes } from "splitpanes";
 
 import { mapGetters } from "vuex";
 
-import { ccService, handleThriftError } from "@cc-api";
+import { ccService, handleThriftError, jiraService } from "@cc-api";
 import { Checker, Order, SortMode, SortType } from "@cc/report-server-types";
 
 import { FillHeight } from "@/directives";
@@ -186,13 +203,15 @@ import {
 import CheckerDocumentationDialog from
   "@/components/CheckerDocumentationDialog";
 import { ReportFilter } from "@/components/Report/ReportFilter";
-import { SetCleanupPlanBtn } from "@/components/Report/CleanupPlan";
+import { CreateJiraTicketBtn, SetCleanupPlanBtn } from "@/components/Report/CleanupPlan";
+import Alerts from "@/components/Alerts";
 
 const namespace = "report";
 
 export default {
   name: "Reports",
   components: {
+    Alerts,
     CheckerDocumentationDialog,
     Splitpanes,
     Pane,
@@ -200,7 +219,8 @@ export default {
     ReviewStatusIcon,
     SeverityIcon,
     ReportFilter,
-    SetCleanupPlanBtn
+    SetCleanupPlanBtn,
+    CreateJiraTicketBtn
   },
   directives: { FillHeight },
   mixins: [ BugPathLengthColorMixin, DetectionStatusMixin ],
@@ -270,6 +290,12 @@ export default {
           align: "center",
           sortable: true
         }
+      ],
+      alertList: [],
+      projectList: [],
+      project: "",
+      projectListRules: [
+        v => !!v || "Choose project"
       ],
       reports: [],
       sameReports: {},
@@ -358,8 +384,19 @@ export default {
       deep: true
     }
   },
+  mounted() {
+    new Promise(resolve => {
+      jiraService.getClient().getJiraProjects(handleThriftError(response => {
+        resolve(this.projectList = response);
+      }));
+    });
+  },
 
   methods: {
+    addAlert(data) {
+      this.alertList.push(data);
+    },
+
     itemExpanded(expandedItem) {
       if (expandedItem.item.sameReports) return;
 
@@ -426,7 +463,8 @@ export default {
           "sort-by": sortBy,
           "sort-desc": sortDesc,
         }
-      }).catch(() => {});
+      }).catch(() => {
+      });
     },
 
     refresh() {
@@ -489,5 +527,10 @@ export default {
   .checker-name {
     cursor: pointer;
   }
+}
+.jira-select {
+  margin-bottom: -15px;
+  max-width: 300px;
+  margin-right: 30px;
 }
 </style>

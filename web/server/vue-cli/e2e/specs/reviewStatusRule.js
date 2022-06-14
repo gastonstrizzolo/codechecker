@@ -81,7 +81,7 @@ module.exports = {
       .assert.urlContains(`report-hash=${reportHash}`)
       .assert.urlContains(`author=${author}`)
       .assert.urlContains("no-associated-reports=on")
-      .assert.urlContains("review-status=False%20positive")
+      .assert.urlContains("review-status=False%20positive");
   },
 
   "edit review status rule" (browser) {
@@ -199,4 +199,4 @@ module.exports = {
     reviewStatusRulePage.waitForElementVisible(
       "@removeReviewStatusRuleBtn");
   },
-}
+};

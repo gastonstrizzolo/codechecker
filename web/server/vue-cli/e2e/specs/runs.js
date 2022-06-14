@@ -23,7 +23,7 @@ module.exports = {
     const col = 3;
     const runsPage = browser.page.runs();
 
-    runsPage.sortRuns(col, (data) => {
+    runsPage.sortRuns(col, data => {
       return data.every((e, ind, a) =>
         !ind || a[ind - 1][col - 1] <= e[col - 1]);
     });
@@ -33,12 +33,12 @@ module.exports = {
     const col = 4;
     const runsPage = browser.page.runs();
 
-    runsPage.sortRuns(col, (data) => {
+    runsPage.sortRuns(col, data => {
       return data.every((e, ind, a) =>
         !ind || a[ind - 1][col - 1] <= e[col - 1]);
     });
 
-    runsPage.sortRuns(col, (data) => {
+    runsPage.sortRuns(col, data => {
       return data.every((e, ind, a) =>
         !ind || a[ind - 1][col - 1] >= e[col - 1]);
     });
@@ -55,9 +55,9 @@ module.exports = {
     runsPage
       .pause(500)  // Wait some time to make sure progressbar appeared.
       .waitForElementNotPresent("@progressBar")
-      .assert.urlContains(`run=${runName}`)
+      .assert.urlContains(`run=${runName}`);
 
-    runsPage.getTableRows("@tableRows", (runs) => {
+    runsPage.getTableRows("@tableRows", runs => {
       browser.assert.ok(runs.length === 1);
       browser.assert.ok(runs[0][2].includes(tag));
     });
@@ -71,7 +71,7 @@ module.exports = {
     runsPage
       .click("@showDescriptionBtn")
       .waitForElementVisible("@descriptionMenu")
-      .assert.containsText("@descriptionMenu", description)
+      .assert.containsText("@descriptionMenu", description);
 
     // Close description tooltip.
     runsPage
@@ -181,7 +181,7 @@ module.exports = {
     runsPage
       .pause(500)  // Wait some time to make sure progressbar appeared.
       .waitForElementNotPresent("@progressBar")
-      .click("@expandBtn")
+      .click("@expandBtn");
 
     runsPage.expect.section(expandedSection).to.be.visible.before(5000);
     expandedSection.expect.section(timelineSection).to.be.visible.before(5000);
@@ -194,7 +194,7 @@ module.exports = {
 
     expandedSection.waitForElementVisible("@loadMoreBtn");
 
-    timelineSection.api.elements("@historyEvent", ({result}) => {
+    timelineSection.api.elements("@historyEvent", ({ result }) => {
       browser.assert.ok(result.value.length === 10);
     });
 
@@ -203,7 +203,7 @@ module.exports = {
       .pause(500)
       .waitForElementNotPresent("@loadMoreBtn");
 
-    timelineSection.api.elements("@historyEvent", ({result}) => {
+    timelineSection.api.elements("@historyEvent", ({ result }) => {
       browser.assert.ok(result.value.length > 10);
     });
   },
@@ -226,7 +226,7 @@ module.exports = {
       .waitForElementNotPresent("@progressBar");
 
     runsPage.perform(() => {
-      timelineSection.api.elements("@historyEvent", ({result}) => {
+      timelineSection.api.elements("@historyEvent", ({ result }) => {
         browser.assert.ok(result.value.length === 1);
       });
     });
@@ -240,16 +240,16 @@ module.exports = {
   },
 
   "open run history event" (browser) {
-      const runsPage = browser.page.runs();
-      const expandedSection = runsPage.section.expanded;
-      const timelineSection = expandedSection.section.timeline;
+    const runsPage = browser.page.runs();
+    const expandedSection = runsPage.section.expanded;
+    const timelineSection = expandedSection.section.timeline;
 
-      timelineSection.click({ selector: "@date", index: 0 });
+    timelineSection.click({ selector: "@date", index: 0 });
 
-      runsPage
-        .assert.urlContains("/reports")
-        .assert.urlContains("run-tag=")
-        .backToRunsPage();
+    runsPage
+      .assert.urlContains("/reports")
+      .assert.urlContains("run-tag=")
+      .backToRunsPage();
   },
 
   "open statistics of a run history event" (browser) {
@@ -272,24 +272,24 @@ module.exports = {
   },
 
   "show check command of a run history event" (browser) {
-      const checkCommand = "cli.py analyze";
-      const runsPage = browser.page.runs();
-      const expandedSection = runsPage.section.expanded;
-      const timelineSection = expandedSection.section.timeline;
-      const dialogSection = runsPage.section.checkCommandDialog;
+    const checkCommand = "cli.py analyze";
+    const runsPage = browser.page.runs();
+    const expandedSection = runsPage.section.expanded;
+    const timelineSection = expandedSection.section.timeline;
+    const dialogSection = runsPage.section.checkCommandDialog;
 
-      timelineSection.click("@showCheckCommandBtn");
+    timelineSection.click("@showCheckCommandBtn");
 
-      runsPage.expect.section(dialogSection)
-        .to.be.visible.before(5000);
+    runsPage.expect.section(dialogSection)
+      .to.be.visible.before(5000);
 
-      dialogSection.assert.containsText("@content", checkCommand);
+    dialogSection.assert.containsText("@content", checkCommand);
 
-      // Close check command dialog.
-      dialogSection.click("@closeBtn");
+    // Close check command dialog.
+    dialogSection.click("@closeBtn");
 
-      runsPage.expect.section(dialogSection)
-        .to.not.be.present.before(5000);
+    runsPage.expect.section(dialogSection)
+      .to.not.be.present.before(5000);
   },
 
   "diff two run history events" (browser) {
@@ -303,13 +303,13 @@ module.exports = {
       .click({ selector: "@baseline", index: 0 })
       .click({ selector: "@compareTo", index: 1 });
 
-      runsPage
-        .assert.not.cssClassPresent("@diffSelectedRunsBtn", "v-btn--disabled")
-        .click("@diffSelectedRunsBtn")
-        .assert.urlContains("/reports")
-        .assert.urlContains("run-tag=")
-        .assert.urlContains("run-tag-newcheck=")
-        .backToRunsPage();
+    runsPage
+      .assert.not.cssClassPresent("@diffSelectedRunsBtn", "v-btn--disabled")
+      .click("@diffSelectedRunsBtn")
+      .assert.urlContains("/reports")
+      .assert.urlContains("run-tag=")
+      .assert.urlContains("run-tag-newcheck=")
+      .backToRunsPage();
   },
 
   "diff a run and a run history event" (browser) {
@@ -320,7 +320,7 @@ module.exports = {
 
     runsPage.assert.cssClassPresent("@diffSelectedRunsBtn", "v-btn--disabled");
 
-    tbl.click({ selector: "@baseline", index: 0 })
+    tbl.click({ selector: "@baseline", index: 0 });
 
     timelineSection
       .click({ selector: "@compareTo", index: 1 });
@@ -347,12 +347,12 @@ module.exports = {
     runsPage
       .pause(500)  // Wait some time to make sure progressbar appeared.
       .waitForElementNotPresent("@progressBar")
-      .assert.urlContains(`run=${runName}`)
+      .assert.urlContains(`run=${runName}`);
 
     runsPage
       .assert.cssClassPresent("@deleteSelectedRunsBtn", "v-btn--disabled");
 
-    tbl.click({ selector: "@remove", index: 0 })
+    tbl.click({ selector: "@remove", index: 0 });
 
     runsPage
       .assert.not.cssClassPresent("@deleteSelectedRunsBtn", "v-btn--disabled");
@@ -367,4 +367,4 @@ module.exports = {
     runsPage.expect.section("@removeRunDialog")
       .to.not.be.present.before(5000);
   }
-}
+};

@@ -8,6 +8,7 @@ import product from "./modules/product";
 import run from "./modules/run";
 import serverInfo from "./modules/server-info";
 import url from "./modules/url";
+import cleanupPlans from "./modules/cleanupPlans";
 
 import report from "./modules/report";
 import statistics from "./modules/statistics";
@@ -24,6 +25,7 @@ export default new Vuex.Store({
     run,
     statistics,
     serverInfo,
-    url
+    url,
+    cleanupPlans
   }
 });

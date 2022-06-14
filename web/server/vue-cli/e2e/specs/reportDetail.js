@@ -164,7 +164,7 @@ module.exports = {
 
     userCommentSection.expect.element("@message").text.to.equal(newMessage);
     systemCommentSection.expect.element("@message").text.to.contain(
-      `changed comment message from ${message} to ${newMessage}`)
+      `changed comment message from ${message} to ${newMessage}`);
 
     // Remove comment.
     userCommentSection.click("@removeBtn");
@@ -243,4 +243,4 @@ module.exports = {
 
     reportDetailPage.waitForProgressBarNotPresent();
   }
-}
+};

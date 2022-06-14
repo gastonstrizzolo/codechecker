@@ -40,6 +40,7 @@ build: clean target_dirs
 		thrift $(THRIFT_OPTS) $(TARGET_PY) $(TARGET_JS) /data/products.thrift && \
 		thrift $(THRIFT_OPTS) $(TARGET_PY) $(TARGET_JS) /data/report_server.thrift && \
 		thrift $(THRIFT_OPTS) $(TARGET_PY) $(TARGET_JS) /data/configuration.thrift && \
+		thrift $(THRIFT_OPTS) $(TARGET_PY) $(TARGET_JS) /data/jira.thrift && \
 		thrift $(THRIFT_OPTS) $(TARGET_PY) $(TARGET_JS) /data/server_info.thrift"
 
 	# Create tarball from the API JavaScript part which will be commited in the

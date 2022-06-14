@@ -64,7 +64,7 @@ const commands = {
   togglePermissions() {
     const section = this.section.editGlobalPermissionsDialog;
 
-    section.api.elements("@checkBox", (response) => {
+    section.api.elements("@checkBox", response => {
       response.result.value.map(c => section.api.elementIdClick(
         c.ELEMENT || c["element-6066-11e4-a52e-4f735466cecf"]));
     });
@@ -112,20 +112,20 @@ const commands = {
     if (props.confidentiality !== undefined) {
       section.click("@confidentiality");
       var idx;
-      switch(props.confidentiality) {
-        case "Confidential classified":
-          idx = 0;
-          break;
-        case "Internal classified":
-          idx = 1;
-          break;
-        case "Open classified":
-          idx = 2;
-          break;
-        default:
-          idx = 0;
+      switch (props.confidentiality) {
+      case "Confidential classified":
+        idx = 0;
+        break;
+      case "Internal classified":
+        idx = 1;
+        break;
+      case "Open classified":
+        idx = 2;
+        break;
+      default:
+        idx = 0;
       }
-        this.section.selectConfidentialityMenu.click({ selector: "@item", index: idx });
+      this.section.selectConfidentialityMenu.click({ selector: "@item", index: idx });
     }
 
     if (props.disableReviewStatusChange !== undefined) {
@@ -209,7 +209,7 @@ const commands = {
       .pause(500) // Wait some time to make sure progressbar appeared.
       .waitForElementNotPresent("@progressBar");
 
-    this.getTableRows("@tableRows", (data) => {
+    this.getTableRows("@tableRows", data => {
       this.api.assert.ok(isSorted(data), "runs are not sorted");
     });
 
@@ -219,7 +219,7 @@ const commands = {
 
 module.exports = {
   url: function() { 
-    return this.api.launchUrl + '/'; 
+    return this.api.launchUrl + "/"; 
   },
   commands: [ commands ],
   elements: {
@@ -296,4 +296,4 @@ module.exports = {
       }
     }
   }
-}
+};

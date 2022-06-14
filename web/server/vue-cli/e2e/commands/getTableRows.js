@@ -38,7 +38,7 @@ exports.command = function (selector, callback) {
       }
       );
     }))
-    .then(data => callback(data));
+      .then(data => callback(data));
   });
 
   return this;

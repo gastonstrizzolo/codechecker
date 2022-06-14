@@ -35,7 +35,7 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
+import { mapGetters, mapMutations } from "vuex";
 import { ccService, handleThriftError } from "@cc-api";
 
 import {
@@ -44,7 +44,6 @@ import {
 
 import SelectOption from "./SelectOption/SelectOption";
 import BaseSelectOptionFilterMixin from "./BaseSelectOptionFilter.mixin";
-
 export default {
   name: "SourceComponentFilter",
   components: {
@@ -81,12 +80,15 @@ export default {
   },
 
   methods: {
+    ...mapMutations({
+      setCleanupPlans: "cleanupPlans/setCleanupPlans"
+    }),
+
     updateReportFilter() {
       this.setReportFilter({
         cleanupPlanNames: this.selectedItems.map(item => item.id)
       });
     },
-
     onReportFilterChange(key) {
       if (key === "cleanupPlanNames") return;
       this.update();
@@ -94,19 +96,21 @@ export default {
 
     fetchItems() {
       this.loading = true;
-
-      return new Promise(resolve => {
+      const result = new Promise(resolve => {
         ccService.getClient().getCleanupPlans(null, handleThriftError(res => {
           resolve(res.map(cleanupPlan => {
             return {
               id : cleanupPlan.name,
               title: cleanupPlan.name,
-              value: cleanupPlan.description
+              value: cleanupPlan.description,
+              id_db: cleanupPlan.id.toNumber()
             };
           }));
           this.loading = false;
         }));
       });
+      result.then(response => this.setCleanupPlans(response));
+      return result;
     }
   }
 };

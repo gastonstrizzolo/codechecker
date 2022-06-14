@@ -4,6 +4,7 @@ import ListCleanupPlans from "./ListCleanupPlans";
 import ManageCleanupPlanDialog from "./ManageCleanupPlanDialog";
 import RemoveCleanupPlanDialog from "./RemoveCleanupPlanDialog";
 import SetCleanupPlanBtn from "./SetCleanupPlanBtn";
+import CreateJiraTicketBtn from "./CreateJiraTicketBtn";
 
 export {
   CleanupPlanSubtitle,
@@ -11,5 +12,6 @@ export {
   ListCleanupPlans,
   ManageCleanupPlanDialog,
   RemoveCleanupPlanDialog,
-  SetCleanupPlanBtn
+  SetCleanupPlanBtn,
+  CreateJiraTicketBtn
 };

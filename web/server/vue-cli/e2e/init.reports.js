@@ -40,7 +40,7 @@ function analyze(output, logfile) {
     execSync(cmd, { stdio: "inherit" });
   } catch (error) {
     if (error.status !== 0 && error.status !== 2)
-      throw(error);
+      throw (error);
   }
 }
 

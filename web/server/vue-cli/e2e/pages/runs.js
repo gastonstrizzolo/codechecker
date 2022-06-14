@@ -13,7 +13,7 @@ const commands = {
       .pause(500) // Wait some time to make sure progressbar appeared.
       .waitForElementNotPresent("@progressBar");
 
-    this.getTableRows("@tableRows", (data) => {
+    this.getTableRows("@tableRows", data => {
       this.api.assert.ok(isSorted(data), "runs are not sorted");
     });
 
@@ -23,7 +23,7 @@ const commands = {
 
 module.exports = {
   url: function() { 
-    return this.api.launchUrl + '/e2e/runs'; 
+    return this.api.launchUrl + "/e2e/runs"; 
   },
   commands: [ commands ],
   elements: {
@@ -98,4 +98,4 @@ module.exports = {
       }
     }
   }
-}
+};
